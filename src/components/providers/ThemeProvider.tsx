@@ -34,6 +34,7 @@ const theme = createTheme({
         startIcon: ({ theme }) => ({
           '& > *:nth-of-type(1)': {
             fontSize: '18px',
+            color: 'inherit',
           },
           ...(theme.direction === 'rtl' ? {
             marginLeft: '8px',
@@ -46,6 +47,7 @@ const theme = createTheme({
         endIcon: ({ theme }) => ({
           '& > *:nth-of-type(1)': {
             fontSize: '18px',
+            color: 'inherit',
           },
           ...(theme.direction === 'rtl' ? {
             marginRight: '8px',
