@@ -34,8 +34,8 @@ import {
   FormSection,
 } from '@/components/common/FormFields';
 import type { Employee, ContractType, EmployeeStatus } from '@/types';
-import { departmentsApi, employeesApi, contractTypesApi } from '@/lib/api';
-import type { DepartmentResponse, ContractTypeResponse } from '@/lib/api';
+import { departmentsApi, employeesApi, contractTypesApi, specializationsApi } from '@/lib/api';
+import type { DepartmentResponse, ContractTypeResponse, SpecializationResponse } from '@/lib/api';
 import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
 
 interface EmployeeFormProps {
@@ -112,7 +112,7 @@ export default function EmployeeForm({
   const [formData, setFormData] = useState<EmployeeFormData>({
     residenceId: '', nationalId: '', fullName: '', email: '', phone: '',
     dateOfBirth: null, hireDate: null, terminationDate: null, departmentCode: 0,
-    positionTitle: '', contractType: 'TECHNO' as ContractType, status: 'ACTIVE' as EmployeeStatus,
+    positionTitle: '', specializationCode: '', contractType: 'TECHNO' as ContractType, status: 'ACTIVE' as EmployeeStatus,
     monthlySalary: 0, nationality: '', isSaudi: false, passportNumber: '',
     passportExpiry: null, residenceExpiry: null, vacationBalance: 30, managerId: undefined,
     username: '', password: '', userType: 'EMPLOYEE', socialInsuranceNo: '',
@@ -121,9 +121,11 @@ export default function EmployeeForm({
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
+  const [specializations, setSpecializations] = useState<SpecializationResponse[]>([]);
   const [contractTypes, setContractTypes] = useState<ContractTypeResponse[]>([]);
   const [managers, setManagers] = useState<Employee[]>([]);
   const [loadingDepartments, setLoadingDepartments] = useState(false);
+  const [loadingSpecializations, setLoadingSpecializations] = useState(false);
   const [loadingContractTypes, setLoadingContractTypes] = useState(false);
   const [loadingManagers, setLoadingManagers] = useState(false);
 
@@ -144,6 +146,13 @@ export default function EmployeeForm({
         const types = await contractTypesApi.getAllContractTypes();
         setContractTypes(types);
       } catch (error) { console.error(error); } finally { setLoadingContractTypes(false); }
+
+      setLoadingSpecializations(true);
+      try {
+        // In edit mode load all (including inactive) so current specialization is always in the list
+        const specs = await specializationsApi.getAll(!initialData);
+        setSpecializations(specs ?? []);
+      } catch (error) { console.error(error); } finally { setLoadingSpecializations(false); }
 
       setLoadingManagers(true);
       try {
@@ -170,7 +179,7 @@ export default function EmployeeForm({
       setFormData({
         residenceId: '', nationalId: '', fullName: '', email: '', phone: '',
         dateOfBirth: null, hireDate: null, terminationDate: null, departmentCode: 0,
-        positionTitle: '', contractType: 'TECHNO' as ContractType, status: 'ACTIVE' as EmployeeStatus,
+        positionTitle: '', specializationCode: '', contractType: 'TECHNO' as ContractType, status: 'ACTIVE' as EmployeeStatus,
         monthlySalary: 0, nationality: '', isSaudi: false, passportNumber: '',
         passportExpiry: null, residenceExpiry: null, vacationBalance: 30, managerId: undefined,
         username: '', password: '', userType: 'EMPLOYEE', socialInsuranceNo: '',
@@ -181,20 +190,32 @@ export default function EmployeeForm({
   const [usernameTouched, setUsernameTouched] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
 
+  // Auto-fill username/password from nationalId (Saudi) or residenceId (foreign) only — not from passport
   const handleIdChange = (idField: 'nationalId' | 'passportNumber' | 'residenceId', value: string) => {
-
-
     setFormData(prev => {
       const next = { ...prev, [idField]: value };
-      if (!isEdit) {
+      if (!isEdit && (idField === 'nationalId' || idField === 'residenceId')) {
         if (!usernameTouched) next.username = value;
         if (!passwordTouched) next.password = value;
       }
       return next;
     });
-
-
   };
+
+  // Sync username/password when nationality or the login-ID field (nationalId / residenceId) changes
+  useEffect(() => {
+    if (isEdit || (usernameTouched && passwordTouched)) return;
+    const loginId =
+      formData.nationality === 'المملكة العربية السعودية'
+        ? formData.nationalId?.trim()
+        : formData.residenceId?.trim();
+    if (!loginId) return;
+    setFormData(prev => ({
+      ...prev,
+      ...(!usernameTouched && prev.username !== loginId ? { username: loginId } : {}),
+      ...(!passwordTouched && prev.password !== loginId ? { password: loginId } : {}),
+    }));
+  }, [formData.nationality, formData.nationalId, formData.residenceId, isEdit, usernameTouched, passwordTouched]);
 
   // "Smart Sync" between Nationality and IsSaudi status
   // One-way sync: nationality changes → update isSaudi
@@ -225,8 +246,14 @@ export default function EmployeeForm({
       if (!formData.hireDate) newErrors.hireDate = 'مطلوب';
       if (!formData.monthlySalary || (formData.monthlySalary && formData.monthlySalary <= 0)) newErrors.monthlySalary = 'يجب أن يكون أكبر من 0';
     } else if (step === 2) {
-      if (!formData.nationalId?.trim() && !formData.residenceId?.trim() && !formData.passportNumber?.trim()) {
-        newErrors.nationalId = 'الهوية مطلوبة';
+      if (formData.nationality === 'المملكة العربية السعودية') {
+        if (!formData.nationalId?.trim()) newErrors.nationalId = 'رقم الهوية الوطنية مطلوب';
+      } else {
+        if (!formData.residenceId?.trim()) newErrors.residenceId = 'رقم الإقامة مطلوب للموظف الأجنبي';
+        if (!formData.residenceExpiry) newErrors.residenceExpiry = 'صلاحية الإقامة مطلوبة للموظف الأجنبي';
+      }
+      if (formData.passportNumber?.trim() && !formData.passportExpiry) {
+        newErrors.passportExpiry = 'صلاحية جواز السفر مطلوبة عند تعبئة رقم الجواز';
       }
       if (!isEdit) {
         if (!formData.username?.trim()) newErrors.username = 'اسم المستخدم مطلوب';
@@ -571,10 +598,16 @@ export default function EmployeeForm({
                       />
                     </SmartField>
                     <SmartField>
-                      <AnimatedTextField
+                      <AnimatedSelect
                         label="المسمى الوظيفي (اختياري)"
-                        value={formData.positionTitle || ''}
-                        onChange={(v: string) => setFormData(p => ({ ...p, positionTitle: v }))}
+                        value={formData.specializationCode || ''}
+                        onChange={(v: string | number) => setFormData(p => ({ ...p, specializationCode: v as string }))}
+                        options={[
+                          { value: '', label: 'اختر خياراً' },
+                          ...(specializations || []).map((s) => ({ value: s.code, label: s.nameAr })),
+                        ]}
+                        disabled={loadingSpecializations}
+                        helperText={isEdit ? 'يمكنك تغيير المسمى الوظيفي عند التعديل' : undefined}
                       />
                     </SmartField>
                   </SmartRow>
@@ -678,24 +711,39 @@ export default function EmployeeForm({
                     <FormSection icon={<AdminPanelSettingsOutlined />} title="الامتثال التنظيمي" />
                     <Paper variant="outlined" sx={{ p: 4, borderRadius: '16px', bgcolor: '#FDFDFD', borderStyle: 'solid', borderColor: '#F3F4F6' }}>
                       <SmartRow>
-                        <SmartField>
-                          <AnimatedTextField
-                            label={formData.nationality === 'المملكة العربية السعودية' ? "رقم الهوية الوطنية" : "رقم جواز السفر"}
-                            value={(formData.nationality === 'المملكة العربية السعودية' ? formData.nationalId : formData.passportNumber) || ''}
-                            onChange={(v: string) => handleIdChange(formData.nationality === 'المملكة العربية السعودية' ? 'nationalId' : 'passportNumber', v)}
-                            error={!!errors.nationalId}
-                            helperText={errors.nationalId}
-                            required
-                          />
-                        </SmartField>
-                        {formData.nationality !== 'المملكة العربية السعودية' && (
+                        {formData.nationality === 'المملكة العربية السعودية' ? (
                           <SmartField>
                             <AnimatedTextField
-                              label="رقم الإقامة"
-                              value={formData.residenceId || ''}
-                              onChange={(v: string) => handleIdChange('residenceId', v)}
+                              label="رقم الهوية الوطنية"
+                              value={formData.nationalId || ''}
+                              onChange={(v: string) => handleIdChange('nationalId', v)}
+                              error={!!errors.nationalId}
+                              helperText={errors.nationalId}
+                              required
                             />
                           </SmartField>
+                        ) : (
+                          <>
+                            <SmartField>
+                              <AnimatedTextField
+                                label="رقم الإقامة"
+                                value={formData.residenceId || ''}
+                                onChange={(v: string) => handleIdChange('residenceId', v)}
+                                error={!!errors.residenceId}
+                                helperText={errors.residenceId}
+                                required
+                              />
+                            </SmartField>
+                            <SmartField>
+                              <AnimatedTextField
+                                label="رقم جواز السفر"
+                                value={formData.passportNumber || ''}
+                                onChange={(v: string) => handleIdChange('passportNumber', v)}
+                                error={!!errors.nationalId}
+                                helperText={errors.nationalId}
+                              />
+                            </SmartField>
+                          </>
                         )}
                         {formData.contractType === 'TECHNO' && (
                           <SmartField>
@@ -711,16 +759,21 @@ export default function EmployeeForm({
                         <SmartRow>
                           <SmartField>
                             <AnimatedDatePicker
-                              label="صلاحية جواز السفر"
-                              value={formData.passportExpiry}
-                              onChange={(v: Date | null) => setFormData(p => ({ ...p, passportExpiry: v }))}
+                              label="صلاحية الإقامة *"
+                              value={formData.residenceExpiry}
+                              onChange={(v: Date | null) => setFormData(p => ({ ...p, residenceExpiry: v }))}
+                              error={!!errors.residenceExpiry}
+                              helperText={errors.residenceExpiry}
+                              required
                             />
                           </SmartField>
                           <SmartField>
                             <AnimatedDatePicker
-                              label="صلاحية الإقامة"
-                              value={formData.residenceExpiry}
-                              onChange={(v: Date | null) => setFormData(p => ({ ...p, residenceExpiry: v }))}
+                              label={formData.passportNumber?.trim() ? 'صلاحية جواز السفر *' : 'صلاحية جواز السفر'}
+                              value={formData.passportExpiry}
+                              onChange={(v: Date | null) => setFormData(p => ({ ...p, passportExpiry: v }))}
+                              error={!!errors.passportExpiry}
+                              helperText={errors.passportExpiry}
                             />
                           </SmartField>
                         </SmartRow>
@@ -741,7 +794,7 @@ export default function EmployeeForm({
                                 setFormData(p => ({ ...p, username: v }));
                                 setUsernameTouched(true);
                               }}
-                              placeholder="يتم ملؤه تلقائياً من الهوية"
+                              placeholder="سعودي: من الهوية الوطنية | أجنبي: من رقم الإقامة"
                               error={!!errors.username}
                               helperText={errors.username}
                               required

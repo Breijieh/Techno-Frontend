@@ -605,7 +605,7 @@ export default function SalaryCalculationPage() {
                       },
                     }}
                   >
-                    <MenuItem value="all">جميع الموظفين</MenuItem>
+                    <MenuItem value="all">موظفين تكنو</MenuItem>
                     <MenuItem value="departments">حسب الأقسام</MenuItem>
                     <MenuItem value="projects">حسب المشاريع</MenuItem>
                   </TextField>

@@ -69,4 +69,6 @@ export type {
 } from './employeeContractAllowances';
 export { salaryStructureApi, mergeBreakdownsToFrontend, splitFrontendToBackendRequests, mapBackendToFrontend as mapSalaryBreakdownBackendToFrontend } from './salaryStructure';
 export type { SalaryBreakdownResponse, SalaryBreakdownRequest } from './salaryStructure';
+export { specializationsApi } from './specializations';
+export type { SpecializationRequest, SpecializationResponse } from './specializations';
 

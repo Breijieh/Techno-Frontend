@@ -384,6 +384,7 @@ export default function UserAccountsPage() {
               HR_MANAGER: 'مدير الموارد البشرية',
               FINANCE_MANAGER: 'مدير المالية',
               PROJECT_MANAGER: 'مدير المشروع',
+              REGIONAL_PROJECT_MANAGER: 'مدير إقليمي',
               WAREHOUSE_MANAGER: 'مدير المستودعات',
               EMPLOYEE: 'موظف',
             };
@@ -400,6 +401,7 @@ export default function UserAccountsPage() {
             HR_MANAGER: { bg: '#DBEAFE', text: '#1E40AF' },
             FINANCE_MANAGER: { bg: '#E0E7FF', text: '#3730A3' },
             PROJECT_MANAGER: { bg: '#F3E8FF', text: '#6B21A8' },
+            REGIONAL_PROJECT_MANAGER: { bg: '#D1FAE5', text: '#047857' },
             WAREHOUSE_MANAGER: { bg: '#ECFDF5', text: '#065F46' },
             EMPLOYEE: { bg: '#F3F4F6', text: '#374151' },
           };
@@ -411,6 +413,7 @@ export default function UserAccountsPage() {
             HR_MANAGER: 'مدير الموارد البشرية',
             FINANCE_MANAGER: 'مدير المالية',
             PROJECT_MANAGER: 'مدير المشروع',
+            REGIONAL_PROJECT_MANAGER: 'مدير إقليمي',
             WAREHOUSE_MANAGER: 'مدير المستودعات',
             EMPLOYEE: 'موظف',
           };

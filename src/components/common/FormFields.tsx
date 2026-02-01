@@ -242,8 +242,8 @@ export function AnimatedSelect({
           return option ? option.label : selected;
         }}
       >
-        {options.map((option) => (
-          <MenuItem key={`${option.value}-${option.label}`} value={option.value}>
+        {options.map((option, index) => (
+          <MenuItem key={`opt-${option.value}-${index}`} value={option.value}>
             {option.label}
           </MenuItem>
         ))}
@@ -455,6 +455,8 @@ interface AnimatedAutocompleteProps<T = unknown> {
   onChange: (value: T | T[] | null) => void;
   options: T[];
   getOptionLabel: (option: T | string) => string;
+  /** Return a unique key for each option to avoid duplicate-key warnings when labels repeat (e.g. same employee name). */
+  getOptionKey?: (option: T) => string | number;
   error?: boolean;
   helperText?: string;
   required?: boolean;
@@ -470,6 +472,7 @@ export function AnimatedAutocomplete<T = unknown>({
   onChange,
   options,
   getOptionLabel,
+  getOptionKey,
   error = false,
   helperText,
   required = false,
@@ -484,12 +487,29 @@ export function AnimatedAutocomplete<T = unknown>({
     ignoreCase: true,
   });
 
+  const getKey = (option: T | string, index: number): string | number => {
+    if (typeof option === 'string') return option || index;
+    if (getOptionKey) return getOptionKey(option);
+    const o = option as { value?: string | number; id?: string | number };
+    if (o?.value != null) return o.value;
+    if (o?.id != null) return o.id;
+    return index;
+  };
+
   return (
     <Autocomplete
       value={value}
       onChange={(_, newValue) => onChange(newValue as T | T[] | null)}
       options={options}
       getOptionLabel={getOptionLabel}
+      renderOption={(props, option, state) => {
+        const { key: _omit, ...rest } = props as { key?: string; [k: string]: unknown };
+        return (
+          <li {...rest} key={getKey(option, state.index)}>
+            {getOptionLabel(option)}
+          </li>
+        );
+      }}
       filterOptions={(options, params) => {
         // Normalize the input value as well
         const normalizedInput = normalizeArabicText(params.inputValue);

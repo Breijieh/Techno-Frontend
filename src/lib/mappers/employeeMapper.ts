@@ -47,7 +47,8 @@ export function mapEmployeeResponseToEmployee(response: EmployeeResponse): Emplo
     hireDate,
     terminationDate,
     departmentCode: response.primaryDeptCode || 0,
-    positionTitle: response.primaryDeptEnName || '', // Use department name as position title
+    positionTitle: response.specializationNameAr || response.primaryDeptEnName || '', // التخصص أو اسم القسم
+    specializationCode: response.specializationCode,
     contractType,
     status,
     monthlySalary,
@@ -111,6 +112,7 @@ export function mapEmployeeToEmployeeRequest(employee: Partial<Employee>): Emplo
       : undefined,
     employmentStatus,
     empContractType,
+    specializationCode: employee.specializationCode,
     primaryDeptCode: employee.departmentCode && employee.departmentCode !== 0 ? employee.departmentCode : undefined,
     primaryProjectCode: employee.projectCode,
     monthlySalary: employee.monthlySalary || 0,

@@ -14,12 +14,15 @@ import AnimatedDialog from '@/components/common/AnimatedDialog';
 import {
   AnimatedTextField,
   AnimatedSelect,
+  AnimatedAutocomplete,
   AnimatedDatePicker,
   LocalizationProvider,
   AdapterDateFns,
 } from '@/components/common/FormFields';
 import type { LaborAssignment, Employee } from '@/types';
 import type { ProjectSummary } from '@/lib/api/projects';
+import { specializationsApi } from '@/lib/api';
+import { useApi } from '@/hooks/useApi';
 
 interface LaborAssignmentFormProps {
   open: boolean;
@@ -46,6 +49,12 @@ export default function LaborAssignmentForm({
 }: LaborAssignmentFormProps) {
   const isEdit = !!initialData;
 
+  const { data: specializationsData } = useApi(
+    () => specializationsApi.getAll(true),
+    { immediate: open }
+  );
+  const specializations = specializationsData ?? [];
+
   const [formData, setFormData] = useState<Partial<LaborAssignment & { projectCode: number; dailyRate: number }>>({
     requestNo: requestNo || 0,
     employeeId: 0,
@@ -63,15 +72,20 @@ export default function LaborAssignmentForm({
     // Use setTimeout to avoid synchronous setState in effect
     setTimeout(() => {
       if (initialData) {
+        // Resolve specialization: table may have jobTitleEn (e.g. "Electrician"), form needs code
+        const specFromName = specializations.find(
+          (s) => s.nameEn === initialData.specialization || s.nameAr === initialData.specialization
+        );
+        const specializationValue = specFromName ? specFromName.code : (initialData.specialization as string);
         setFormData({
           requestNo: initialData.requestNo,
           employeeId: initialData.employeeId,
-          projectCode: initialData.projectCode || selectedProjectCode || 0, // Use projectCode from initialData first, then selectedProjectCode
-          specialization: initialData.specialization,
+          projectCode: initialData.projectCode || selectedProjectCode || 0,
+          specialization: specializationValue,
           fromDate: initialData.fromDate ? new Date(initialData.fromDate) : undefined,
           toDate: initialData.toDate ? new Date(initialData.toDate) : undefined,
           status: initialData.status,
-          dailyRate: initialData.dailyRate || 0, // Use dailyRate from initialData
+          dailyRate: initialData.dailyRate || 0,
         });
       } else {
         setFormData({
@@ -88,6 +102,31 @@ export default function LaborAssignmentForm({
       setErrors({});
     }, 0);
   }, [initialData, open, requestNo, selectedProjectCode]);
+
+  // When specializations load and we're in edit mode with specialization as name, resolve to code
+  useEffect(() => {
+    if (!initialData || !formData.specialization || specializations.length === 0) return;
+    const isCode = specializations.some((s) => s.code === formData.specialization);
+    if (isCode) return;
+    const spec = specializations.find(
+      (s) => s.nameEn === formData.specialization || s.nameAr === formData.specialization
+    );
+    if (spec) setFormData((prev) => ({ ...prev, specialization: spec.code }));
+  }, [specializations, initialData, formData.specialization]);
+
+  // Auto-fill specialization and daily rate from selected employee
+  useEffect(() => {
+    if (!formData.employeeId || formData.employeeId <= 0 || !employees?.length) return;
+    const emp = employees.find((e) => e.employeeId === formData.employeeId);
+    const updates: Partial<LaborAssignment & { projectCode: number; dailyRate: number }> = {
+      specialization: emp?.specializationCode ?? '',
+    };
+    // When adding (not editing), auto-fill daily rate from employee's monthly salary (÷30)
+    if (!initialData && emp?.monthlySalary != null && emp.monthlySalary > 0) {
+      updates.dailyRate = Math.round((emp.monthlySalary / 30) * 100) / 100;
+    }
+    setFormData((prev) => ({ ...prev, ...updates }));
+  }, [formData.employeeId, employees, initialData]);
 
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -114,24 +153,27 @@ export default function LaborAssignmentForm({
     await onSubmit(formData);
   };
 
-  const employeeOptions = (employees || []).map((emp) => ({
-    value: emp.employeeId,
-    label: `${emp.fullName} (${emp.employeeId})`,
-  }));
+  const employeeOptions: { value: number; label: string }[] = [
+    { value: 0, label: 'اختر الموظف' },
+    ...(employees || []).map((emp) => ({
+      value: emp.employeeId,
+      label: `${emp.fullName} (${emp.employeeId})`,
+    })),
+  ];
 
   const projectOptions = (projects || []).map((proj) => ({
     value: proj.projectCode,
     label: `${proj.projectName} (${proj.projectCode})`,
   }));
 
-  const specializationOptions = [
-    { value: 'Electrician', label: 'كهربائي' },
-    { value: 'Plumber', label: 'سباك' },
-    { value: 'Carpenter', label: 'نجار' },
-    { value: 'Welder', label: 'لحام' },
-    { value: 'Painter', label: 'دهان' },
-    { value: 'General Labor', label: 'عامل عام' },
-  ];
+  const selectedEmployee = formData.employeeId && employees?.length
+    ? employees.find((e) => e.employeeId === formData.employeeId)
+    : null;
+  const specializationDisplayText = !selectedEmployee
+    ? 'اختر الموظف أولاً'
+    : selectedEmployee.specializationCode
+      ? (specializations.find((s) => s.code === selectedEmployee.specializationCode)?.nameAr ?? selectedEmployee.positionTitle ?? '—')
+      : 'لا يوجد';
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -214,11 +256,16 @@ export default function LaborAssignmentForm({
               helperText={errors.projectCode}
               required
             />
-            <AnimatedSelect
+            <AnimatedAutocomplete
               label="الموظف"
-              value={formData.employeeId || 0}
-              onChange={(val: string | number) => setFormData({ ...formData, employeeId: val as number })}
-              options={[{ value: 0, label: 'اختر الموظف' }, ...employeeOptions]}
+              value={employeeOptions.find((opt) => opt.value === (formData.employeeId || 0)) ?? null}
+              onChange={(val) => {
+                const option = val as { value: number; label: string } | null;
+                setFormData({ ...formData, employeeId: option?.value ?? 0 });
+              }}
+              options={employeeOptions}
+              getOptionLabel={(opt) => (opt as { label: string }).label}
+              getOptionKey={(opt) => (opt as { value: number }).value}
               error={!!errors.employeeId}
               helperText={errors.employeeId}
               required
@@ -237,14 +284,13 @@ export default function LaborAssignmentForm({
               },
             }}
           >
-            <AnimatedSelect
+            <AnimatedTextField
               label="التخصص"
-              value={formData.specialization || ''}
-              onChange={(val: string | number) => setFormData({ ...formData, specialization: val as string })}
-              options={[{ value: '', label: 'اختر التخصص' }, ...specializationOptions]}
+              value={specializationDisplayText}
+              onChange={() => {}}
+              disabled
+              helperText={errors.specialization || (selectedEmployee ? 'يُعرض من المسمى الوظيفي للموظف المختار' : undefined)}
               error={!!errors.specialization}
-              helperText={errors.specialization}
-              required
             />
             <AnimatedTextField
               label="المعدل اليومي (ر.س)"
@@ -252,8 +298,9 @@ export default function LaborAssignmentForm({
               value={formData.dailyRate ? formData.dailyRate.toString() : ''}
               onChange={(val: number | string) => setFormData({ ...formData, dailyRate: val === '' ? 0 : Number(val) })}
               error={!!errors.dailyRate}
-              helperText={errors.dailyRate || 'أدخل المعدل اليومي بالريال السعودي (يجب أن يكون أكبر من 0)'}
+              helperText={errors.dailyRate || (selectedEmployee ? 'يُعرض من راتب الموظف الشهري' : 'اختر الموظف أولاً')}
               required
+              disabled
               InputProps={{
                 inputProps: { min: 0.01, step: 0.01 },
               }}

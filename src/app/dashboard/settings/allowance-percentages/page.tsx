@@ -31,6 +31,7 @@ import AllowancePercentageForm from '@/components/forms/AllowancePercentageForm'
 import DeleteConfirmDialog from '@/components/common/DeleteConfirmDialog';
 import ViewDetailsDialog from '@/components/common/ViewDetailsDialog';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { useToast } from '@/contexts/ToastContext';
 import { salaryStructureApi, mergeBreakdownsToFrontend, splitFrontendToBackendRequests } from '@/lib/api/salaryStructure';
 import { useApi } from '@/hooks/useApi';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
@@ -42,6 +43,7 @@ type AllowancePercentageWithSerNo = AllowancePercentage & { saudiSerNo?: number;
 
 export default function AllowancePercentagesPage() {
   const router = useRouter();
+  const toast = useToast();
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedPercentage, setSelectedPercentage] = useState<AllowancePercentageWithSerNo | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -169,8 +171,37 @@ export default function AllowancePercentagesPage() {
     setIsDeleteModalOpen(true);
   };
 
+  // Saudi total must not exceed 100%; Foreign total may exceed 100%
+  const validateSaudiTotalOnly = (data: Partial<AllowancePercentage>): string | null => {
+    const saudiPct = data.saudiPercentage ?? 0;
+    const currentSaudiTotal = percentages.reduce(
+      (sum, row) => sum + (selectedPercentage?.transactionCode === row.transactionCode ? 0 : (row.saudiPercentage ?? 0)),
+      0
+    );
+    const newSaudiTotal = currentSaudiTotal + saudiPct;
+    if (newSaudiTotal > 100.01) {
+      return `إجمالي نسبة السعوديين يتجاوز 100%. الإجمالي الحالي: ${newSaudiTotal.toFixed(2)}%`;
+    }
+    return null;
+  };
+
   const handleSubmit = async (data: Partial<AllowancePercentage>) => {
     try {
+      // Add mode: prevent adding a transaction type that already exists (use Edit instead)
+      if (!selectedPercentage && data.transactionCode !== undefined) {
+        const alreadyExists = percentages.some(
+          (row) => row.transactionCode === data.transactionCode
+        );
+        if (alreadyExists) {
+          toast.showError('هذا النوع موجود مسبقاً. استخدم "تعديل" لتغيير النسب.');
+          return;
+        }
+      }
+      const saudiError = validateSaudiTotalOnly(data);
+      if (saudiError) {
+        toast.showError(saudiError);
+        return;
+      }
       // Split frontend data into two backend requests (S and F)
       const requests = splitFrontendToBackendRequests(data);
 
@@ -510,6 +541,7 @@ export default function AllowancePercentagesPage() {
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleSubmit}
         loading={createBreakdown.loading}
+        existingTransactionCodes={percentages.map((p) => p.transactionCode)}
       />
 
       <AllowancePercentageForm

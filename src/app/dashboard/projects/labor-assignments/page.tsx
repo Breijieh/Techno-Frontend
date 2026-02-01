@@ -33,7 +33,7 @@ import LaborAssignmentViewForm from '@/components/forms/LaborAssignmentViewForm'
 import DeleteConfirmDialog from '@/components/common/DeleteConfirmDialog';
 import AssignmentOverlapDialog from '@/components/common/AssignmentOverlapDialog';
 import useRouteProtection from '@/hooks/useRouteProtection';
-import { projectsApi, employeesApi, laborApi } from '@/lib/api';
+import { projectsApi, employeesApi, laborApi, specializationsApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
@@ -58,9 +58,9 @@ export default function LaborAssignmentsPage() {
     { immediate: true }
   );
 
-  // Fetch employees
-  const { data: employeesResponse } = useApi(
-    () => employeesApi.getAllEmployees(),
+  // Fetch employees (large size so dropdown has all; refetch when opening add modal so new employees appear)
+  const { data: employeesResponse, execute: fetchEmployees } = useApi(
+    () => employeesApi.getAllEmployees({ page: 0, size: 5000, sortBy: 'employeeNo', sortDirection: 'asc' }),
     { immediate: true }
   );
 
@@ -68,6 +68,12 @@ export default function LaborAssignmentsPage() {
     if (!employeesResponse?.employees) return [];
     return employeesResponse.employees.map(mapEmployeeResponseToEmployee);
   }, [employeesResponse]);
+
+  // Fetch specializations (for job title labels when saving)
+  const { data: specializations = [] } = useApi(
+    () => specializationsApi.getAll(true),
+    { immediate: true }
+  );
 
   // Fetch labor assignments
   const { data: allAssignments = [], execute: loadAssignments } = useApi(
@@ -152,6 +158,7 @@ export default function LaborAssignmentsPage() {
   const handleAdd = () => {
     setSelectedAssignment(null);
     setIsAddModalOpen(true);
+    fetchEmployees().catch(() => {}); // Refetch so new employees appear in dropdown
   };
 
   const handleView = (assignment: LaborAssignment) => {
@@ -162,6 +169,7 @@ export default function LaborAssignmentsPage() {
   const handleEdit = (assignment: LaborAssignment) => {
     setSelectedAssignment(assignment);
     setIsAddModalOpen(true);
+    fetchEmployees().catch(() => {}); // Refetch so new employees appear
   };
 
   const handleDelete = (assignment: LaborAssignment) => {
@@ -232,6 +240,9 @@ export default function LaborAssignmentsPage() {
         requestNoToSend = null;
       }
 
+      const specializationCode = params.data.specialization as string | undefined;
+      const spec = specializationCode ? (specializations ?? []).find((s) => s.code === specializationCode) : undefined;
+
       const assignmentDto: LaborAssignmentDto = {
         employeeNo: params.data.employeeId || 0,
         projectCode: finalProjectCode,
@@ -240,6 +251,8 @@ export default function LaborAssignmentsPage() {
         startDate: params.data.fromDate ? new Date(params.data.fromDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         endDate: params.data.toDate ? new Date(params.data.toDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
         dailyRate: dailyRate,
+        jobTitleAr: spec?.nameAr,
+        jobTitleEn: spec?.nameEn,
         notes: params.data.specialization || undefined,
       };
 

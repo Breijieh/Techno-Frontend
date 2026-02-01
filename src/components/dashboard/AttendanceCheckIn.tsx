@@ -121,6 +121,20 @@ export default function AttendanceCheckIn() {
     useEffect(() => {
         setIsMounted(true);
     }, []);
+
+    // Fix Leaflet default marker icon 404: use absolute CDN URLs so icons work on any route (e.g. /dashboard/self-service/attendance)
+    useEffect(() => {
+        if (!isMounted) return;
+        import('leaflet').then((L) => {
+            const Default = L.Icon.Default as unknown as { prototype: { _getIconUrl?: unknown } };
+            if (Default?.prototype?._getIconUrl) delete Default.prototype._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+            });
+        });
+    }, [isMounted]);
     
     // Update mapReady when project coordinates are available and container exists
     useEffect(() => {

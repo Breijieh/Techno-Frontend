@@ -36,8 +36,8 @@ export default function AttendanceHistoryPage() {
   const router = useRouter();
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  // Protect by permission: any role with attendance module can access own attendance history
+  useRouteProtection();
 
   // Get current user's employee data
   const { data: employeeResponse, loading: loadingEmployee, error: employeeError } = useApi(

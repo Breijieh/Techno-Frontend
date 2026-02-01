@@ -64,6 +64,7 @@ export interface Employee {
   terminationDate?: Date;
   departmentCode: number;
   positionTitle: string;
+  specializationCode?: string;
   contractType: ContractType;
   socialInsuranceNo?: string;
   status: EmployeeStatus;

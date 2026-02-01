@@ -19,6 +19,7 @@ export interface EmployeeRequest {
   terminationReason?: string;
   socialInsuranceNo?: string;
   empContractType: string;
+  specializationCode?: string;
   primaryDeptCode?: number;
   primaryProjectCode?: number;
   monthlySalary: number;
@@ -45,6 +46,9 @@ export interface EmployeeResponse {
   terminationReason?: string;
   socialInsuranceNo?: string;
   empContractType: string;
+  specializationCode?: string;
+  specializationNameAr?: string;
+  specializationNameEn?: string;
   primaryDeptCode?: number;
   primaryDeptArName?: string;
   primaryDeptEnName?: string;

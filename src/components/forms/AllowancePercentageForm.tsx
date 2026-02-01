@@ -26,6 +26,8 @@ interface AllowancePercentageFormProps {
   onSubmit: (data: Partial<AllowancePercentage>) => Promise<void>;
   initialData?: AllowancePercentage | null;
   loading?: boolean;
+  /** When adding, exclude these transaction codes from the dropdown (already exist in table) */
+  existingTransactionCodes?: number[];
 }
 
 export default function AllowancePercentageForm({
@@ -34,6 +36,7 @@ export default function AllowancePercentageForm({
   onSubmit,
   initialData,
   loading = false,
+  existingTransactionCodes = [],
 }: AllowancePercentageFormProps) {
   const isEdit = !!initialData;
 
@@ -108,6 +111,7 @@ export default function AllowancePercentageForm({
       ...transactionTypesData
         .map(mapTransactionTypeBackendToFrontend)
         .filter((tt) => tt.transactionType === 'ALLOWANCE')
+        .filter((tt) => isEdit || !existingTransactionCodes.includes(tt.transactionCode))
         .map((tt) => ({
           value: tt.transactionCode,
           label: `${tt.transactionNameEn} (${tt.transactionCode})`,

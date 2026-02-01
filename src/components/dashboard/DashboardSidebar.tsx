@@ -161,6 +161,7 @@ const BASE_SETTINGS_ITEMS: MenuItem[] = [
       { label: 'إدارة المسؤولين', icon: <AdminPanelSettings /> },
       { label: 'حسابات المستخدمين', icon: <People /> },
       { label: 'الأقسام', icon: <BusinessCenter /> },
+      { label: 'التخصصات', icon: <WorkOutline /> },
       { label: 'تقويم العطلات', icon: <CalendarMonth /> },
       { label: 'جداول الوقت', icon: <AccessTime /> },
       { label: 'الموردون', icon: <LocalShipping /> },
@@ -221,9 +222,15 @@ export default function DashboardSidebar({
   const router = useSafeRouter();
   const pathname = usePathname();
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({});
-  const userRole = getUserRole();
-  const userName = typeof window !== 'undefined' ? sessionStorage.getItem('userName') || 'مستخدم' : 'مستخدم';
-  const userContext = getUserContext();
+  // Defer to client after mount to avoid hydration mismatch (server has no sessionStorage)
+  const [userRole, setUserRole] = useState<ReturnType<typeof getUserRole>>(null);
+  const [userName, setUserName] = useState('مستخدم');
+  const [userContext, setUserContext] = useState<ReturnType<typeof getUserContext>>({});
+  useEffect(() => {
+    setUserRole(getUserRole());
+    setUserName(sessionStorage.getItem('userName') || 'مستخدم');
+    setUserContext(getUserContext());
+  }, []);
 
   // Track if we've failed with a connection error to prevent infinite retries
   const hasConnectionError = useRef(false);

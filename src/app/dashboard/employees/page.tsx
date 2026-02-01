@@ -433,9 +433,21 @@ export default function EmployeesListPage() {
         },
       },
       {
-        accessorKey: 'nationalId',
+        id: 'identityOrResidence',
         header: 'الهوية / الإقامة',
         size: 140,
+        accessorFn: (row: Employee) =>
+          row.nationality === 'المملكة العربية السعودية'
+            ? row.nationalId
+            : (row.residenceId || row.nationalId || ''),
+        Cell: ({ row }) => {
+          const emp = row.original as Employee;
+          const value =
+            emp.nationality === 'المملكة العربية السعودية'
+              ? emp.nationalId
+              : (emp.residenceId || emp.nationalId || '—');
+          return value;
+        },
       },
       {
         accessorKey: 'nationality',

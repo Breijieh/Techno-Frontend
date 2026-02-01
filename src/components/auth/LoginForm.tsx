@@ -49,9 +49,9 @@ function normalizeUserRole(backendRole: string): string {
 
 const translations = {
   systemName: 'نظام شركة تكنو',
-  residenceIdLabel: 'رقم الإقامة / الهوية الوطنية',
-  residenceIdPlaceholder: 'أدخل رقم الهوية',
-  residenceIdRequired: 'رقم الهوية مطلوب',
+  residenceIdLabel: 'رقم الإقامة / الهوية الوطنية (اسم المستخدم)',
+  residenceIdPlaceholder: 'أدخل رقم الإقامة أو الهوية الوطنية',
+  residenceIdRequired: 'رقم الإقامة / الهوية مطلوب',
   passwordLabel: 'كلمة المرور',
   passwordPlaceholder: 'أدخل كلمة المرور',
   passwordRequired: 'كلمة المرور مطلوبة',
@@ -168,7 +168,7 @@ export default function LoginForm() {
     } catch (error) {
       console.error('Login error:', error);
 
-      let errorMessage = 'الهوية أو كلمة المرور غير صحيحة';
+      let errorMessage = 'رقم الإقامة/الهوية أو كلمة المرور غير صحيحة';
 
       if (error instanceof ApiError) {
         errorMessage = error.message || errorMessage;

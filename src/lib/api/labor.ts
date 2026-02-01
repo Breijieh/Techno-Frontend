@@ -87,6 +87,8 @@ export interface LaborAssignmentDto {
   startDate: string;
   endDate: string;
   dailyRate: number;
+  jobTitleAr?: string;
+  jobTitleEn?: string;
   notes?: string;
 }
 

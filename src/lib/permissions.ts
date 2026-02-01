@@ -160,6 +160,7 @@ const EMPLOYEE_ALLOWED_REPORT_ROUTES = [
 const SETTINGS_ROUTE_ROLES: Record<string, UserRole[]> = {
   '/dashboard/settings/users': ['Admin'],
   '/dashboard/settings/departments': ['Admin', 'HR Manager'],
+  '/dashboard/settings/specializations': ['Admin', 'HR Manager'],
   '/dashboard/settings/holidays': ['Admin', 'HR Manager'],
   '/dashboard/settings/time-schedules': ['Admin', 'HR Manager'],
   '/dashboard/settings/suppliers': ['Admin', 'Warehouse Manager', 'Finance Manager'],
@@ -426,6 +427,7 @@ export const MENU_LABEL_ROUTE_MAP: Record<string, string> = {
   'إدارة المسؤولين': '/dashboard/settings/admin-users',
   'حسابات المستخدمين': '/dashboard/settings/users',
   'الأقسام': '/dashboard/settings/departments',
+  'التخصصات': '/dashboard/settings/specializations',
   'تقويم العطلات': '/dashboard/settings/holidays',
   'جداول الوقت': '/dashboard/settings/time-schedules',
   'الموردون': '/dashboard/settings/suppliers',
