@@ -1,0 +1,280 @@
+@import url('https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=El+Messiri:wght@400..700&family=IBM+Plex+Sans+Arabic:wght@100;200;300;400;500;600;700&family=Science+Gothic:wght@100..900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #F0F4F8;
+  --foreground: #2C3E50;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "El Messiri", var(--font-tajawal), sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #F0F4F8;
+    --foreground: #2C3E50;
+  }
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "El Messiri", var(--font-tajawal), sans-serif;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  direction: rtl;
+}
+
+#__next {
+  background: var(--background);
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Override browser autofill styles - ensure black text */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:-webkit-autofill-selected {
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827 !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+}
+
+/* Specific overrides for MUI TextField inputs - ensure black text */
+.MuiOutlinedInput-input:-webkit-autofill,
+.MuiOutlinedInput-input:-webkit-autofill:hover,
+.MuiOutlinedInput-input:-webkit-autofill:focus,
+.MuiOutlinedInput-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  box-shadow: 0 0 0 1000px #FFFFFF inset !important;
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #111827 !important;
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+}
+
+/* Force all MUI input text to be black */
+.MuiOutlinedInput-root input,
+.MuiOutlinedInput-root textarea,
+.MuiInputBase-input {
+  color: #111827 !important;
+}
+
+.MuiOutlinedInput-root input:-webkit-autofill,
+.MuiOutlinedInput-root textarea:-webkit-autofill {
+  -webkit-text-fill-color: #111827 !important;
+  color: #111827 !important;
+}
+
+/* Force MUI Menu text to be visible - Global override for all menus */
+.MuiMenu-root .MuiPaper-root,
+.MuiPopover-root .MuiPaper-root {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+}
+
+.MuiMenu-root .MuiList-root,
+.MuiPopover-root .MuiList-root {
+  background-color: #FFFFFF !important;
+  color: #111827 !important;
+}
+
+.MuiMenu-root .MuiMenuItem-root,
+.MuiPopover-root .MuiMenuItem-root {
+  color: #111827 !important;
+  background-color: #FFFFFF !important;
+}
+
+.MuiMenu-root .MuiMenuItem-root .MuiBox-root,
+.MuiPopover-root .MuiMenuItem-root .MuiBox-root {
+  color: #111827 !important;
+}
+
+.MuiMenu-root .MuiMenuItem-root .MuiBox-root > div,
+.MuiPopover-root .MuiMenuItem-root .MuiBox-root > div {
+  color: #111827 !important;
+}
+
+.MuiMenu-root .MuiMenuItem-root div,
+.MuiPopover-root .MuiMenuItem-root div {
+  color: #111827 !important;
+}
+
+.MuiMenu-root .MuiMenuItem-root.Mui-disabled,
+.MuiPopover-root .MuiMenuItem-root.Mui-disabled {
+  color: #9CA3AF !important;
+  opacity: 0.6;
+}
+
+.MuiMenu-root .MuiMenuItem-root:hover,
+.MuiPopover-root .MuiMenuItem-root:hover {
+  background-color: #F3F4F6 !important;
+  color: #111827 !important;
+}
+
+.MuiMenu-root .MuiListItemIcon-root .MuiSvgIcon-root,
+.MuiPopover-root .MuiListItemIcon-root .MuiSvgIcon-root {
+  color: #374151 !important;
+}
+
+/* Force Material React Table expanded row content to have visible text */
+.MuiTableRow-root[data-expanded="true"] .MuiBox-root,
+.MuiTableRow-root[data-expanded="true"] .MuiTypography-root {
+  color: #111827 !important;
+}
+
+/* Material React Table expanded row content */
+[data-expanded="true"] .MuiBox-root,
+[data-expanded="true"] .MuiTypography-root {
+  color: #111827 !important;
+}
+
+/* MRT expanded row content */
+.mrt-expanded-row-content .MuiBox-root,
+.mrt-expanded-row-content .MuiTypography-root,
+.mrt-expanded-row-content p,
+.mrt-expanded-row-content span {
+  color: #111827 !important;
+}
+
+/* Force all MUI MenuItem text to be visible in dropdowns */
+.MuiMenuItem-root {
+  color: #111827 !important;
+  background-color: #FFFFFF !important;
+}
+
+.MuiMenuItem-root:hover {
+  background-color: #F3F4F6 !important;
+  color: #111827 !important;
+}
+
+.MuiMenuItem-root.Mui-selected {
+  background-color: #EFF6FF !important;
+  color: #0c2b7a !important;
+}
+
+.MuiMenuItem-root.Mui-selected:hover {
+  background-color: #DBEAFE !important;
+}
+
+.MuiMenuItem-root.Mui-disabled {
+  color: #9CA3AF !important;
+  opacity: 0.6;
+}
+
+/* Ensure Select dropdown menu has visible text */
+.MuiPopover-root .MuiPaper-root .MuiMenuItem-root,
+.MuiMenu-root .MuiPaper-root .MuiMenuItem-root {
+  color: #111827 !important;
+}
+
+/* Force all form input text to be black - Global override */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select {
+  color: #111827 !important;
+}
+
+/* MUI specific input overrides */
+.MuiTextField-root input,
+.MuiTextField-root textarea,
+.MuiFormControl-root input,
+.MuiFormControl-root textarea,
+.MuiInputBase-root input,
+.MuiInputBase-root textarea,
+.MuiOutlinedInput-root input,
+.MuiOutlinedInput-root textarea {
+  color: #111827 !important;
+}
+
+/* Date picker input text */
+.MuiInputBase-input,
+.MuiInputBase-input::placeholder {
+  color: #111827 !important;
+}
+
+.MuiInputBase-input::placeholder {
+  opacity: 0.6;
+}
+
+/* Almarai font weight classes */
+.almarai-light {
+  font-family: "Almarai", sans-serif;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.almarai-regular {
+  font-family: "Almarai", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.almarai-bold {
+  font-family: "Almarai", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.almarai-extrabold {
+  font-family: "Almarai", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
+
+/* El Messiri font classes */
+.el-messiri {
+  font-family: "El Messiri", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+.el-messiri-regular {
+  font-family: "El Messiri", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.el-messiri-medium {
+  font-family: "El Messiri", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.el-messiri-semibold {
+  font-family: "El Messiri", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+  font-style: normal;
+}
+
+.el-messiri-bold {
+  font-family: "El Messiri", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 700;
+  font-style: normal;
+}

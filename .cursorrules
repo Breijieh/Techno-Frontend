@@ -1,0 +1,471 @@
+# Project Rules for Techno Frontend
+
+## Table Implementation
+
+**CRITICAL RULE**: When implementing any tables or data grids in this project, you MUST reference the `MRT.md` file in the project root. This file contains the complete Material React Table documentation and should be your primary reference.
+
+### Table Guidelines:
+1. Always use Material React Table (MRT) for tables
+2. Always check `MRT.md` for examples, API reference, and best practices
+3. Use TypeScript with proper `MRT_ColumnDef` types
+4. Ensure data and columns are memoized
+5. Follow MRT patterns from the documentation
+
+### Required Table Implementation Pattern:
+
+**MANDATORY**: All tables MUST follow this exact pattern for consistency:
+
+1. **State Management**:
+   ```tsx
+   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+   const [isFullscreen, setIsFullscreen] = useState(false);
+   ```
+
+2. **Table Configuration**:
+   ```tsx
+   const table = useMaterialReactTable({
+     columns,
+     data: yourData,
+     enableRowSelection: true/false, // Based on requirements
+     enableColumnFilters: true, // Use enableColumnFilters (not enableColumnFiltering)
+     enableStickyHeader: true,
+     enableDensityToggle: true,
+     enableFullScreenToggle: false, // ALWAYS disable built-in fullscreen, using custom
+     initialState: {
+       density: 'comfortable',
+       pagination: { pageSize: 25, pageIndex: 0 },
+     },
+     ...lightTableTheme,
+     muiTableContainerProps: {
+       sx: {
+         ...(lightTableTheme.muiTableContainerProps as any)?.sx,
+         overflowX: 'auto',
+         maxWidth: '100%',
+         width: '100%',
+         ...(isFullscreen && { maxHeight: 'calc(100vh - 120px)' }),
+       },
+     },
+     renderTopToolbarCustomActions: () => (
+       <Box sx={{ display: 'flex', gap: 1 }}>
+         {/* Your custom action buttons */}
+         <Tooltip title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+           <IconButton
+             onClick={handleToggleFullscreen}
+             sx={{
+               color: '#0c2b7a',
+               '&:hover': {
+                 backgroundColor: 'rgba(12, 43, 122, 0.08)',
+               },
+             }}
+           >
+             {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+           </IconButton>
+         </Tooltip>
+       </Box>
+     ),
+   });
+   ```
+
+3. **Table Wrapper with Dynamic Width**:
+   ```tsx
+   const tableWrapper = (
+     <Box
+       sx={{
+         animation: isFullscreen ? 'none' : 'fadeInUp 0.6s ease-out 0.4s both',
+         '@keyframes fadeInUp': {
+           from: { opacity: 0, transform: 'translateY(20px)' },
+           to: { opacity: 1, transform: 'translateY(0)' },
+         },
+         width: isFullscreen ? '100%' : sidebarExpanded ? 'calc(100vw - 280px - 64px)' : 'calc(100vw - 80px - 64px)',
+         maxWidth: isFullscreen ? '100%' : sidebarExpanded ? 'calc(100vw - 280px - 64px)' : 'calc(100vw - 80px - 64px)',
+         height: isFullscreen ? '100%' : 'auto',
+         overflow: 'hidden',
+         transition: isFullscreen ? 'none' : 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1), maxWidth 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+         '& .MuiPaper-root': {
+           width: '100%',
+           maxWidth: '100%',
+           height: isFullscreen ? '100%' : 'auto',
+           overflowX: 'auto',
+           '&::-webkit-scrollbar': {
+             height: '8px',
+           },
+           '&::-webkit-scrollbar-track': {
+             backgroundColor: '#F3F4F6',
+             borderRadius: '4px',
+           },
+           '&::-webkit-scrollbar-thumb': {
+             backgroundColor: '#9CA3AF',
+             borderRadius: '4px',
+             '&:hover': {
+               backgroundColor: '#6B7280',
+             },
+           },
+         },
+         '& .MuiTableContainer-root': {
+           overflowX: 'auto !important',
+           ...(isFullscreen && { maxHeight: 'calc(100vh - 120px)' }),
+           '&::-webkit-scrollbar': {
+             height: '8px',
+           },
+           '&::-webkit-scrollbar-track': {
+             backgroundColor: '#F3F4F6',
+             borderRadius: '4px',
+           },
+           '&::-webkit-scrollbar-thumb': {
+             backgroundColor: '#9CA3AF',
+             borderRadius: '4px',
+             '&:hover': {
+               backgroundColor: '#6B7280',
+             },
+           },
+         },
+       }}
+     >
+       <MaterialReactTable table={table} />
+     </Box>
+   );
+   ```
+
+4. **Required Imports**:
+   ```tsx
+   import { Fullscreen, FullscreenExit } from '@mui/icons-material';
+   import { Tooltip } from '@mui/material';
+   ```
+
+5. **Key Features**:
+   - Dynamic width calculation based on sidebar state
+   - Horizontal scrolling with custom scrollbar styling
+   - Smooth transitions when sidebar expands/collapses
+   - Proper overflow handling
+   - Custom scrollbar appearance (8px height, rounded, hover effects)
+
+## Chart Implementation
+
+**CRITICAL RULE**: When you need to create any charts, graphs, or data visualizations, always think about using **ECharts first**. It is the primary and recommended charting library for this project.
+
+### Chart Guidelines:
+1. Always think ECharts first when charts/visualizations are needed
+2. Use `echarts-for-react` for React components
+3. Reference configuration in `src/lib/charts/echarts-config.ts`
+4. Check ECharts documentation at https://echarts.apache.org/
+5. Use examples from https://echarts.apache.org/examples/
+
+## Animation Standards
+
+**CRITICAL RULE**: ALL new components MUST include smooth loading animations by default. Do NOT wait for user request - implement automatically.
+
+### Animation Guidelines:
+1. **Always add entry animations** to new components (pages, cards, lists, forms, modals)
+2. **Standard timing**: 0.5-0.6s duration with ease-out or cubic-bezier(0.4, 0, 0.2, 1)
+3. **Staggered elements**: Use 0.1s delay increments between items in lists/grids
+4. **Pattern**: Fade in + slide (from left for sidebar, from top for header, from bottom for content)
+5. **Total load time**: Keep under 2 seconds for complete page animations
+6. **Keyframe template**:
+   ```
+   animation: 'fadeInUp 0.6s ease-out 0.3s both'
+   '@keyframes fadeInUp': {
+     from: { opacity: 0, transform: 'translateY(20px)' },
+     to: { opacity: 1, transform: 'translateY(0)' }
+   }
+   ```
+
+## Component-Based Architecture
+
+**CRITICAL RULE**: Always create reusable components instead of inline code. When implementing any feature, identify reusable parts and extract them into separate component files.
+
+### Component Guidelines:
+1. **Extract reusable code** into separate component files (don't inline everything in pages)
+2. **Single Responsibility**: Each component should have one clear purpose
+3. **Proper Organization**: Place components in appropriate directories
+   - Dashboard components: `src/components/dashboard/`
+   - Auth components: `src/components/auth/`
+   - Shared/common: `src/components/common/`
+4. **TypeScript Interfaces**: Define clear prop interfaces for all components
+5. **Default Animations**: Include smooth loading animations automatically
+6. **Benefits**: Maintainability, reusability, readability, scalability, type safety
+
+### Examples of Components to Extract:
+- Navigation bars, sidebars, headers, footers
+- Cards (stat cards, info cards, welcome cards)
+- Forms and form fields
+- Modals and dialogs
+- Buttons and interactive elements
+- Any repeated UI patterns
+
+## Grid Layout Standards
+
+**CRITICAL RULE**: NEVER use MUI Grid component. Always use native CSS Grid instead.
+
+### Grid Guidelines:
+1. **Use CSS Grid** with MUI Box component and `display: 'grid'` property
+2. **Never import or use** `Grid` from `@mui/material`
+3. **Responsive Grid**: Use MUI's `sx` prop with responsive breakpoints:
+   ```tsx
+   <Box
+     sx={{
+       display: 'grid',
+       gridTemplateColumns: {
+         xs: '1fr',           // Mobile: single column
+         sm: 'repeat(2, 1fr)', // Tablet: two columns
+         md: 'repeat(4, 1fr)', // Desktop: four columns
+       },
+       gap: 3,
+     }}
+   >
+   ```
+4. **Grid Column Spanning**: Use `gridColumn` property for full-width items:
+   ```tsx
+   gridColumn: { xs: '1', md: '1 / -1' }
+   ```
+5. **Benefits**: Better performance, native browser support, no deprecated MUI Grid warnings
+
+## Custom Fullscreen Feature
+
+**CRITICAL RULE**: ALL tables MUST include a custom fullscreen feature. NEVER use the built-in MRT fullscreen toggle. Always implement the custom fullscreen pattern below.
+
+### Fullscreen Implementation Pattern:
+
+**MANDATORY**: Follow this exact pattern for all table pages:
+
+1. **State and Handlers**:
+   ```tsx
+   const [isFullscreen, setIsFullscreen] = useState(false);
+
+   const handleToggleFullscreen = () => {
+     setIsFullscreen(!isFullscreen);
+   };
+
+   // Handle ESC key to exit fullscreen
+   useEffect(() => {
+     const handleEscape = (e: KeyboardEvent) => {
+       if (e.key === 'Escape' && isFullscreen) {
+         setIsFullscreen(false);
+       }
+     };
+
+     if (isFullscreen) {
+       document.addEventListener('keydown', handleEscape);
+       // Prevent body scroll when in fullscreen
+       document.body.style.overflow = 'hidden';
+     } else {
+       document.body.style.overflow = '';
+     }
+
+     return () => {
+       document.removeEventListener('keydown', handleEscape);
+       document.body.style.overflow = '';
+     };
+   }, [isFullscreen]);
+   ```
+
+2. **Fullscreen Toggle Button** (in `renderTopToolbarCustomActions`):
+   ```tsx
+   <Tooltip title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+     <IconButton
+       onClick={handleToggleFullscreen}
+       sx={{
+         color: '#0c2b7a',
+         '&:hover': {
+           backgroundColor: 'rgba(12, 43, 122, 0.08)',
+         },
+       }}
+     >
+       {isFullscreen ? <FullscreenExit /> : <Fullscreen />}
+     </IconButton>
+   </Tooltip>
+   ```
+
+3. **Fullscreen Container** (in return statement):
+   ```tsx
+   return (
+     <>
+       {/* Fullscreen Container */}
+       {isFullscreen && (
+         <Box
+           sx={{
+             position: 'fixed',
+             top: 0,
+             left: 0,
+             right: 0,
+             bottom: 0,
+             zIndex: 99999,
+             backgroundColor: '#F8F9FC',
+             display: 'flex',
+             flexDirection: 'column',
+             animation: 'fadeIn 0.3s ease-out',
+             '@keyframes fadeIn': {
+               from: { opacity: 0 },
+               to: { opacity: 1 },
+             },
+           }}
+         >
+           {/* Fullscreen Header */}
+           <Box
+             sx={{
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'space-between',
+               padding: '16px 24px',
+               backgroundColor: '#FFFFFF',
+               borderBottom: '1px solid #E5E7EB',
+               boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+             }}
+           >
+             <Typography
+               variant="h6"
+               sx={{ fontWeight: 700, color: '#111827' }}
+             >
+               Page Title - Fullscreen
+             </Typography>
+             <Tooltip title="Exit Fullscreen (ESC)">
+               <IconButton
+                 onClick={handleToggleFullscreen}
+                 sx={{
+                   color: '#0c2b7a',
+                   '&:hover': {
+                     backgroundColor: 'rgba(12, 43, 122, 0.08)',
+                   },
+                 }}
+               >
+                 <FullscreenExit />
+               </IconButton>
+             </Tooltip>
+           </Box>
+
+           {/* Fullscreen Table Container */}
+           <Box
+             sx={{
+               flex: 1,
+               padding: '24px',
+               overflow: 'auto',
+               backgroundColor: '#F8F9FC',
+             }}
+           >
+             {tableWrapper}
+           </Box>
+         </Box>
+       )}
+
+       {/* Normal View */}
+       <Box
+         sx={{
+           display: 'flex',
+           minHeight: '100vh',
+           backgroundColor: '#F8F9FC',
+           opacity: isFullscreen ? 0 : 1,
+           pointerEvents: isFullscreen ? 'none' : 'auto',
+           transition: 'opacity 0.3s ease-out',
+         }}
+       >
+         {/* Your normal page content with DashboardSidebar, DashboardHeader, etc. */}
+         {tableWrapper}
+       </Box>
+     </>
+   );
+   ```
+
+4. **Key Features**:
+   - Fixed position overlay with z-index 99999
+   - ESC key support to exit fullscreen
+   - Body scroll prevention when in fullscreen
+   - Smooth fade-in animation
+   - Fullscreen header with exit button
+   - Normal view fades out when fullscreen is active
+   - Pointer events disabled on normal view when in fullscreen
+
+5. **Important Notes**:
+   - Always set `enableFullScreenToggle: false` in table config
+   - Use the same `tableWrapper` component in both normal and fullscreen views
+   - The fullscreen container must be rendered conditionally with `{isFullscreen && (...)}`
+   - Normal view must have `opacity` and `pointerEvents` controlled by `isFullscreen` state
+
+## Code Standards
+
+- Use TypeScript for all new files
+- Follow Next.js 16 App Router patterns
+- Use Material UI for UI components (except Grid - use CSS Grid)
+- Maintain consistency with existing code structure
+- Use Inter font family for all text
+
+## Test Failure Handling - CRITICAL RULES
+
+**CRITICAL RULE**: When a Playwright test fails, you MUST determine the root cause before fixing. DO NOT automatically fix the test - fix the actual problem.
+
+### Decision Tree for Test Failures:
+
+1. **Check Documentation First**:
+   - Review `UNDERSTAND-FILES-AND-MISSING-IMPLS/understand.md` for expected behavior
+   - Check `techno-frontend/src/lib/permissions.ts` for actual route permissions
+   - Verify `techno-backend/TEST_USERS_CREDENTIALS.txt` for correct credentials
+   - Review `techno-frontend/src/types/roles.ts` for role definitions
+
+2. **Identify Root Cause**:
+   - **If test expects correct behavior but application is wrong**: Fix the application code (frontend/backend)
+   - **If test expects wrong behavior**: Fix the test file
+   - **If permissions don't match documentation**: Fix permissions in `permissions.ts` or route protection
+   - **If route access doesn't match expected**: Fix route protection, not the test
+
+3. **Fix Priority Order** (MOST IMPORTANT):
+   ```
+   1. Application Code (Frontend/Backend) - If behavior doesn't match documentation
+   2. Permissions/Routes - If access control doesn't match expected behavior
+   3. Test File - Only if test is incorrectly written
+   ```
+
+### Examples:
+
+**Example 1: Permission Mismatch**
+- **Test fails**: Finance Manager cannot access `/dashboard/employees/loan-requests`
+- **Check**: `permissions.ts` line 169 shows route is restricted to Admin, HR Manager, General Manager
+- **Documentation**: Says Finance Manager can approve loans
+- **Decision**: 
+  - If Finance Manager SHOULD access this route → Fix `permissions.ts` (add Finance Manager)
+  - If Finance Manager should NOT access directly → Fix test (use approvals page instead)
+
+**Example 2: Missing Element**
+- **Test fails**: Cannot find `<form>` element
+- **Check**: Page snapshot shows form fields exist but no `<form>` tag
+- **Decision**: 
+  - If page SHOULD have `<form>` tag → Fix frontend component (add form wrapper)
+  - If page correctly doesn't use `<form>` → Fix test (check for form fields instead)
+
+**Example 3: Wrong Credentials**
+- **Test fails**: Login fails with "Invalid credentials"
+- **Check**: `TEST_USERS_CREDENTIALS.txt` shows correct credentials
+- **Decision**: 
+  - If credentials are wrong in test → Fix test file
+  - If backend doesn't accept correct credentials → Fix backend authentication
+
+### Required Steps Before Fixing:
+
+1. **Read the error message carefully** - Understand what failed
+2. **Check page snapshot** - See what's actually on the page
+3. **Verify against documentation** - What SHOULD happen according to docs
+4. **Check permissions file** - What routes/actions are actually allowed
+5. **Determine root cause** - Is it application code or test code?
+6. **Fix the root cause** - Not just the symptom
+
+### Critical Rules:
+
+- ❌ **NEVER** fix a test just to make it pass if the application behavior is wrong
+- ✅ **ALWAYS** verify expected behavior against documentation first
+- ✅ **ALWAYS** check `permissions.ts` for route access before assuming test is wrong
+- ✅ **ALWAYS** fix application code if it doesn't match documented behavior
+- ✅ **ONLY** fix test file if test expectations are incorrect
+
+### Reference Files for Decision Making:
+
+- **Permissions**: `techno-frontend/src/lib/permissions.ts`
+- **Route Protection**: `techno-frontend/src/lib/routeProtection.ts`
+- **Role Definitions**: `techno-frontend/src/types/roles.ts`
+- **Test Credentials**: `techno-backend/TEST_USERS_CREDENTIALS.txt`
+- **Documentation**: `UNDERSTAND-FILES-AND-MISSING-IMPLS/understand.md`
+- **Route List**: `techno-frontend/ROUTES.md`
+
+### When in Doubt:
+
+1. Check what the documentation says should happen
+2. Check what the permissions file says is allowed
+3. Check what the actual application code does
+4. Fix the mismatch between these three, prioritizing documentation → permissions → application code
+5. Only fix the test if all three are aligned and test is still wrong

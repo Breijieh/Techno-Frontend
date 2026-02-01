@@ -1,0 +1,355 @@
+import type {
+  LoanRequest,
+  LoanInstallment,
+  AllowanceRequest,
+  SalaryHeader,
+  MonthlyAllowanceRecord,
+  MonthlyDeductionRecord,
+  LoanInstallmentRecord,
+  LeaveBalance,
+} from '@/types';
+
+export const mockLoanRequests: LoanRequest[] = [
+  {
+    loanId: 4001,
+    employeeId: 1026,
+    loanAmount: 15000,
+    numberOfInstallments: 10,
+    firstPaymentDate: new Date('2024-12-01'),
+    remainingBalance: 12000,
+    status: 'APPROVED',
+    requestDate: new Date('2024-10-15'),
+    approvedDate: new Date('2024-10-20'),
+  },
+  {
+    loanId: 4002,
+    employeeId: 1011,
+    loanAmount: 8000,
+    numberOfInstallments: 8,
+    firstPaymentDate: new Date('2024-11-01'),
+    remainingBalance: 7000,
+    status: 'APPROVED',
+    requestDate: new Date('2024-09-20'),
+    approvedDate: new Date('2024-09-25'),
+  },
+  {
+    loanId: 4003,
+    employeeId: 1030,
+    loanAmount: 12000,
+    numberOfInstallments: 12,
+    firstPaymentDate: new Date('2025-01-01'),
+    remainingBalance: 12000,
+    status: 'NEW',
+    requestDate: new Date('2024-11-18'),
+    nextApproval: 1005,
+    nextLevel: 1,
+  },
+  {
+    loanId: 4004,
+    employeeId: 2015,
+    loanAmount: 5000,
+    numberOfInstallments: 5,
+    firstPaymentDate: new Date('2024-12-01'),
+    remainingBalance: 5000,
+    status: 'INPROCESS',
+    requestDate: new Date('2024-11-10'),
+    nextApproval: 1010,
+    nextLevel: 2,
+  },
+];
+
+export const mockLoanInstallments: LoanInstallment[] = [
+  // Loan 4001 installments
+  { loanId: 4001, installmentNo: 1, dueDate: new Date('2024-12-01'), installmentAmount: 1500, paidDate: new Date('2024-12-05'), status: 'PAID' },
+  { loanId: 4001, installmentNo: 2, dueDate: new Date('2025-01-01'), installmentAmount: 1500, paidDate: new Date('2025-01-05'), status: 'PAID' },
+  { loanId: 4001, installmentNo: 3, dueDate: new Date('2025-02-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 4, dueDate: new Date('2025-03-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 5, dueDate: new Date('2025-04-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 6, dueDate: new Date('2025-05-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 7, dueDate: new Date('2025-06-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 8, dueDate: new Date('2025-07-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 9, dueDate: new Date('2025-08-01'), installmentAmount: 1500, status: 'PENDING' },
+  { loanId: 4001, installmentNo: 10, dueDate: new Date('2025-09-01'), installmentAmount: 1500, status: 'PENDING' },
+
+  // Loan 4002 installments
+  { loanId: 4002, installmentNo: 1, dueDate: new Date('2024-11-01'), installmentAmount: 1000, paidDate: new Date('2024-11-05'), status: 'PAID' },
+  { loanId: 4002, installmentNo: 2, dueDate: new Date('2024-12-01'), installmentAmount: 1000, status: 'PENDING' },
+  { loanId: 4002, installmentNo: 3, dueDate: new Date('2025-01-01'), installmentAmount: 1000, status: 'PENDING' },
+  { loanId: 4002, installmentNo: 4, dueDate: new Date('2025-02-01'), installmentAmount: 1000, status: 'PENDING' },
+  { loanId: 4002, installmentNo: 5, dueDate: new Date('2025-03-01'), installmentAmount: 1000, status: 'PENDING' },
+  { loanId: 4002, installmentNo: 6, dueDate: new Date('2025-04-01'), installmentAmount: 1000, status: 'PENDING' },
+  { loanId: 4002, installmentNo: 7, dueDate: new Date('2025-05-01'), installmentAmount: 1000, status: 'PENDING' },
+  { loanId: 4002, installmentNo: 8, dueDate: new Date('2025-06-01'), installmentAmount: 1000, status: 'PENDING' },
+];
+
+export const mockAllowanceRequests: AllowanceRequest[] = [
+  {
+    requestId: 6001,
+    employeeId: 1026,
+    allowanceType: 'Salary Increase',
+    allowanceAmount: 1000,
+    reason: 'Excellent performance and project completion',
+    status: 'APPROVED',
+    requestDate: new Date('2024-10-01'),
+  },
+  {
+    requestId: 6002,
+    employeeId: 1011,
+    allowanceType: 'Special Allowance',
+    allowanceAmount: 500,
+    reason: 'Additional responsibilities',
+    status: 'NEW',
+    requestDate: new Date('2024-11-15'),
+    nextApproval: 1010,
+    nextLevel: 1,
+  },
+  {
+    requestId: 6003,
+    employeeId: 1030,
+    allowanceType: 'Salary Increase',
+    allowanceAmount: 800,
+    reason: 'Promotion to senior position',
+    status: 'INPROCESS',
+    requestDate: new Date('2024-11-10'),
+    nextApproval: 1010,
+    nextLevel: 2,
+  },
+  {
+    requestId: 6004,
+    employeeId: 2008,
+    allowanceType: 'Performance Bonus',
+    allowanceAmount: 2000,
+    reason: 'Outstanding project delivery',
+    status: 'REJECTED',
+    requestDate: new Date('2024-11-01'),
+  },
+];
+
+export const mockSalaryHeaders: SalaryHeader[] = [
+  {
+    salaryId: 70001,
+    employeeNo: 1001,
+    salaryMonth: '2024-11',
+    salaryVersion: 1,
+    isLatest: 'Y',
+    grossSalary: 35000,
+    totalAllowances: 2500,
+    totalDeductions: 500,
+    totalOvertime: 0,
+    totalAbsence: 0,
+    totalLoans: 0,
+    netSalary: 37000,
+    transStatus: 'A',
+    approvedBy: 1001,
+    approvedDate: new Date('2024-11-25'),
+  },
+  {
+    salaryId: 70002,
+    employeeNo: 1005,
+    salaryMonth: '2024-11',
+    salaryVersion: 1,
+    isLatest: 'Y',
+    grossSalary: 18000,
+    totalAllowances: 1200,
+    totalDeductions: 300,
+    totalOvertime: 0,
+    totalAbsence: 0,
+    totalLoans: 0,
+    netSalary: 18900,
+    transStatus: 'A',
+    approvedBy: 1010,
+    approvedDate: new Date('2024-11-25'),
+  },
+  {
+    salaryId: 70003,
+    employeeNo: 1010,
+    salaryMonth: '2024-11',
+    salaryVersion: 1,
+    isLatest: 'Y',
+    grossSalary: 22000,
+    totalAllowances: 1500,
+    totalDeductions: 200,
+    totalOvertime: 0,
+    totalAbsence: 0,
+    totalLoans: 0,
+    netSalary: 23300,
+    transStatus: 'A',
+    approvedBy: 1010,
+    approvedDate: new Date('2024-11-25'),
+  },
+  {
+    salaryId: 70004,
+    employeeNo: 1026,
+    salaryMonth: '2024-11',
+    salaryVersion: 1,
+    isLatest: 'Y',
+    grossSalary: 12000,
+    totalAllowances: 800,
+    totalDeductions: 150,
+    totalOvertime: 1200,
+    totalAbsence: 0,
+    totalLoans: 1500,
+    netSalary: 12350,
+    transStatus: 'N',
+    nextApproval: 1005,
+    nextLevel: 1,
+  },
+];
+
+// ========== Monthly Allowances ==========
+export const mockMonthlyAllowances: MonthlyAllowanceRecord[] = [
+  {
+    recordId: 1,
+    employeeId: 1026,
+    monthYear: '2024-11',
+    transactionCode: 5, // Overtime
+    amount: 1200,
+    description: 'Overtime hours: 8 hours',
+    createdDate: new Date('2024-11-30'),
+  },
+  {
+    recordId: 2,
+    employeeId: 1026,
+    monthYear: '2024-11',
+    transactionCode: 6, // Performance Bonus
+    amount: 500,
+    description: 'Performance bonus for project completion',
+    createdDate: new Date('2024-11-15'),
+  },
+  {
+    recordId: 3,
+    employeeId: 1011,
+    monthYear: '2024-11',
+    transactionCode: 5, // Overtime
+    amount: 800,
+    description: 'Overtime hours: 5.3 hours',
+    createdDate: new Date('2024-11-30'),
+  },
+  {
+    recordId: 4,
+    employeeId: 1030,
+    monthYear: '2024-11',
+    transactionCode: 7, // Salary Increase
+    amount: 1000,
+    description: 'Approved salary increase',
+    createdDate: new Date('2024-11-20'),
+  },
+];
+
+// ========== Monthly Deductions ==========
+export const mockMonthlyDeductions: MonthlyDeductionRecord[] = [
+  {
+    recordId: 1,
+    employeeId: 1026,
+    monthYear: '2024-11',
+    transactionCode: 20, // Absence Deduction
+    amount: 400,
+    description: 'Absence: 1 day',
+    createdDate: new Date('2024-11-30'),
+  },
+  {
+    recordId: 2,
+    employeeId: 1026,
+    monthYear: '2024-11',
+    transactionCode: 21, // Late Arrival Deduction
+    amount: 150,
+    description: 'Late arrival: 1.5 hours total',
+    createdDate: new Date('2024-11-30'),
+  },
+  {
+    recordId: 3,
+    employeeId: 1011,
+    monthYear: '2024-11',
+    transactionCode: 22, // Early Departure Deduction
+    amount: 100,
+    description: 'Early departure: 1 hour',
+    createdDate: new Date('2024-11-30'),
+  },
+  {
+    recordId: 4,
+    employeeId: 1030,
+    monthYear: '2024-11',
+    transactionCode: 24, // Emergency Leave Deduction
+    amount: 300,
+    description: 'Emergency leave: 1 day',
+    createdDate: new Date('2024-11-15'),
+  },
+];
+
+// ========== Loan Installments ==========
+export const mockLoanInstallmentRecords: LoanInstallmentRecord[] = [
+  {
+    installmentId: 1,
+    loanRequestId: 4001,
+    employeeId: 1026,
+    installmentNumber: 1,
+    dueDate: new Date('2024-12-01'),
+    amount: 1500,
+    paidDate: new Date('2024-12-05'),
+    status: 'PAID',
+  },
+  {
+    installmentId: 2,
+    loanRequestId: 4001,
+    employeeId: 1026,
+    installmentNumber: 2,
+    dueDate: new Date('2025-01-01'),
+    amount: 1500,
+    paidDate: new Date('2025-01-05'),
+    status: 'PAID',
+  },
+  {
+    installmentId: 3,
+    loanRequestId: 4001,
+    employeeId: 1026,
+    installmentNumber: 3,
+    dueDate: new Date('2025-02-01'),
+    amount: 1500,
+    status: 'PENDING',
+  },
+  {
+    installmentId: 4,
+    loanRequestId: 4002,
+    employeeId: 1011,
+    installmentNumber: 1,
+    dueDate: new Date('2024-11-01'),
+    amount: 1000,
+    paidDate: new Date('2024-11-05'),
+    status: 'PAID',
+  },
+  {
+    installmentId: 5,
+    loanRequestId: 4002,
+    employeeId: 1011,
+    installmentNumber: 2,
+    dueDate: new Date('2024-12-01'),
+    amount: 1000,
+    status: 'PENDING',
+  },
+];
+
+// ========== Leave Balances ==========
+export const mockLeaveBalances: LeaveBalance[] = [
+  {
+    employeeId: 1026,
+    annualLeaveBalance: 25,
+    sickLeaveBalance: 12,
+    emergencyLeaveBalance: 8,
+    lastUpdated: new Date('2024-11-30'),
+  },
+  {
+    employeeId: 1011,
+    annualLeaveBalance: 30,
+    sickLeaveBalance: 14,
+    emergencyLeaveBalance: 10,
+    lastUpdated: new Date('2024-11-30'),
+  },
+  {
+    employeeId: 1030,
+    annualLeaveBalance: 20,
+    sickLeaveBalance: 10,
+    emergencyLeaveBalance: 5,
+    lastUpdated: new Date('2024-11-30'),
+  },
+];
+
