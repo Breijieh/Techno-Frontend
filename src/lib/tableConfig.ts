@@ -38,8 +38,14 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   enableColumnFilterModes: false, // Disable filter mode switching icons
   enableColumnPinning: true, // Enable pinning globally
   enableStickyHeader: true, // Keep headers visible
+  // Hide MRT's built-in toolbar elements (we use custom TableToolbarWrapper)
+  enableGlobalFilter: true, // Keep functionality
+  enableGlobalFilterModes: false, // Disable mode switching
+  positionGlobalFilter: 'none', // Hide built-in search box
+  enableToolbarInternalActions: true, // Keep density toggle etc
   initialState: {
     showColumnFilters: false,
+    showGlobalFilter: false, // Hide global filter by default
     columnPinning: { right: ['mrt-row-actions'] }
   }, // Hide built-in column filters row and pin actions to the right
   // Global custom filter functions - override MRT defaults for safety
@@ -269,7 +275,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
-      '&:last-child': {
+      '&:first-child': {
         borderLeft: 'none',
       },
       // Hide sort icons
@@ -349,7 +355,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       borderBottom: '1px solid #F3F4F6',
       borderLeft: '1px solid #F3F4F6', // Cell separator
       backgroundColor: '#FFFFFF',
-      '&:last-child': {
+      '&:first-child': {
         borderLeft: 'none',
       },
       // Ensure content within is also centered if it's a flex container

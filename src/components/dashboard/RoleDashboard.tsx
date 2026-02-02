@@ -79,7 +79,7 @@ export default function RoleDashboard({ role }: RoleDashboardProps) {
       route: '/dashboard/employees/leave-requests',
     },
     {
-      title: 'طلب قرض',
+      title: 'طلب سلفة',
       description: 'التقدم بطلب سلفة راتب',
       icon: <AttachMoney />,
       color: '#F59E0B',
@@ -94,7 +94,7 @@ export default function RoleDashboard({ role }: RoleDashboardProps) {
     },
     {
       title: 'تأجيل قسط',
-      description: 'طلب تأجيل دفعة قرض',
+      description: 'طلب تأجيل دفعة سلفة',
       icon: <ReceiptLong />,
       color: '#EC4899',
       route: '/dashboard/employees/installment-postpone',
@@ -680,7 +680,7 @@ export default function RoleDashboard({ role }: RoleDashboardProps) {
               }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827' }}>
-                طلبات القرض الأخيرة
+                طلبات السلف الأخيرة
               </Typography>
               <Button
                 variant="outlined"
@@ -697,7 +697,7 @@ export default function RoleDashboard({ role }: RoleDashboardProps) {
               </Button>
             </Box>
             <Typography sx={{ fontSize: '14px', color: '#6B7280', fontStyle: 'italic' }}>
-              لا توجد طلبات قرض حديثة
+              لا توجد طلبات سلف حديثة
             </Typography>
           </Paper>
         </Box>

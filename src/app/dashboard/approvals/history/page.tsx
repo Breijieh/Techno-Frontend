@@ -103,7 +103,7 @@ export default function ApprovalHistoryPage() {
   const getRequestTypeLabel = useCallback((type: string) => {
     const typeMap: Record<string, string> = {
       'LEAVE': 'إجازة',
-      'LOAN': 'قرض',
+      'LOAN': 'سلفة',
       'ALLOWANCE': 'بدل',
       'TRANSFER': 'تحويل',
       'PAYMENT': 'دفعة',

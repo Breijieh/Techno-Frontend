@@ -75,11 +75,11 @@ export function getNotificationFriendlyTitle(notificationType: string): string {
         'LEAVE_CANCELLED': 'تم إلغاء الإجازة',
 
         // Loan
-        'LOAN_SUBMITTED': 'طلب قرض جديد',
+        'LOAN_SUBMITTED': 'طلب سلفة جديد',
         'LOAN_APPROVED_INTERMEDIATE': 'يحتاج موافقتك',
-        'LOAN_APPROVED_FINAL': 'تمت الموافقة على القرض',
-        'LOAN_REJECTED': 'تم رفض القرض',
-        'LOAN_FULLY_PAID': 'تم سداد القرض',
+        'LOAN_APPROVED_FINAL': 'تمت الموافقة على السلفة',
+        'LOAN_REJECTED': 'تم رفض السلفة',
+        'LOAN_FULLY_PAID': 'تم سداد السلفة',
         'LOAN_INSTALLMENT_PAID': 'تم خصم قسط',
         'LOAN_POSTPONEMENT_SUBMITTED': 'طلب تأجيل قسط',
         'LOAN_POSTPONEMENT_APPROVED': 'تمت الموافقة على التأجيل',

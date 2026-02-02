@@ -66,7 +66,9 @@ export default function LaborAssignmentsPage() {
 
   const employees = useMemo(() => {
     if (!employeesResponse?.employees) return [];
-    return employeesResponse.employees.map(mapEmployeeResponseToEmployee);
+    return employeesResponse.employees
+      .map(mapEmployeeResponseToEmployee)
+      .filter(emp => emp.contractType === 'TECHNO');
   }, [employeesResponse]);
 
   // Fetch specializations (for job title labels when saving)
@@ -145,7 +147,7 @@ export default function LaborAssignmentsPage() {
     // Fallback to employee lookup
     const employeesList = employees || [];
     const employee = employeesList.find(e => e.employeeId === empId);
-    return employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.fullName : `Employee #${empId}`;
+    return employee ? `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || employee.fullName : `Techno Employee #${empId}`;
   }, [employees]);
 
   const filteredAssignments = useMemo(() => {

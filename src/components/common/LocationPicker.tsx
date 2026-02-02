@@ -106,8 +106,15 @@ export default function LocationPicker({
     }, [latitude, longitude]);
 
     const handlePositionChange = (newPos: L.LatLng) => {
-        setPosition(newPos);
-        onChange(newPos.lat, newPos.lng);
+        // Normalize longitude to -180 to 180
+        // Leaflet can return values > 180 or < -180 if map is dragged around the world multiple times
+        let normalizedLng = newPos.lng;
+        while (normalizedLng > 180) normalizedLng -= 360;
+        while (normalizedLng < -180) normalizedLng += 360;
+
+        const normalizedPos = new L.LatLng(newPos.lat, normalizedLng);
+        setPosition(normalizedPos);
+        onChange(newPos.lat, normalizedLng);
     };
 
     const mapCenter: [number, number] = position

@@ -43,7 +43,7 @@ export default function LoanRequestViewForm({
 
   const fields = [
     {
-      label: 'رقم القرض',
+      label: 'رقم السلفة',
       value: `#${data.loanId}`,
     },
     {
@@ -51,7 +51,7 @@ export default function LoanRequestViewForm({
       value: `${employeeName} (رقم: ${data.employeeId})`,
     },
     {
-      label: 'مبلغ القرض',
+      label: 'مبلغ السلفة',
       value: `ر.س ${formatNumber(data.loanAmount)}`,
     },
     {
@@ -90,7 +90,7 @@ export default function LoanRequestViewForm({
     <ViewDetailsDialog
       open={open}
       onClose={onClose}
-      title="تفاصيل طلب القرض"
+      title="تفاصيل طلب السلفة"
       fields={fields}
       renderContent={() => (
         <RequestTimeline

@@ -18,17 +18,17 @@ export const TableToolbarWrapper = <TData extends Record<string, any>>({
     quickFilterGroups,
 }: TableToolbarWrapperProps<TData>) => {
     return (
-        <Box sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 1 }}>
+        <Box dir="rtl" sx={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 2, p: 1, direction: 'rtl' }}>
             {/* Top Action Bar */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
 
-                {/* Left Side: Search */}
+                {/* Right Side (RTL): Search */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <TableSearch table={table} />
                 </Box>
 
-                {/* Right Side: Custom Actions (Export, New, Fullscreen passed as children) */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {/* Left Side (RTL): Custom Actions (Export, New, Fullscreen passed as children) */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexDirection: 'row-reverse' }}>
                     {children}
                 </Box>
             </Box>

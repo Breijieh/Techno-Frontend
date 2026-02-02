@@ -167,9 +167,11 @@ export default function ProjectForm({
     }
 
     // Validate attendance radius range if provided
+    /* 
     if (hasRadius && (formData.attendanceRadius! < 50 || formData.attendanceRadius! > 5000)) {
       newErrors.attendanceRadius = 'نطاق الحضور يجب أن يكون بين 50 و 5000 متر';
     }
+    */
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -186,10 +188,12 @@ export default function ProjectForm({
     { immediate: open }
   );
 
-  const managerOptions = employees.map((emp) => ({
-    value: emp.employeeId,
-    label: emp.fullName,
-  }));
+  const managerOptions = employees
+    .filter((emp) => emp.status === 'ACTIVE' || (initialData && (emp.employeeId === initialData.projectManagerId || emp.employeeId === initialData.regionalManagerId)))
+    .map((emp) => ({
+      value: emp.employeeId,
+      label: emp.fullName,
+    }));
 
   // Filter schedules: show all schedules, but indicate if already assigned to another project
   const scheduleOptions = (schedulesData || []).map((schedule: TimeScheduleResponse) => {

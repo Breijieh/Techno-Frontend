@@ -74,7 +74,9 @@ export default function TempWorkerAssignmentsPage() {
 
   const employees = useMemo(() => {
     if (!employeesResponse?.employees) return [];
-    return employeesResponse.employees.map(mapEmployeeResponseToEmployee);
+    return employeesResponse.employees
+      .map(mapEmployeeResponseToEmployee)
+      .filter(emp => emp.contractType !== 'TECHNO');
   }, [employeesResponse]);
 
   // Fetch projects for form

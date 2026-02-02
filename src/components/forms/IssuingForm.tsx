@@ -282,10 +282,12 @@ export default function IssuingForm({
     label: `${proj.projectName || proj.projectName} (#${proj.projectCode})`,
   }));
 
-  const employeeOptions = (employees || []).map((emp) => ({
-    value: emp.employeeNo,
-    label: emp.employeeName || emp.employeeName || `Employee #${emp.employeeNo}`,
-  }));
+  const employeeOptions = (employees || [])
+    .filter((emp) => emp.employmentStatus === 'ACTIVE' || (initialData && emp.employeeNo === initialData.requestedBy))
+    .map((emp) => ({
+      value: emp.employeeNo,
+      label: emp.employeeName || emp.employeeName || `Employee #${emp.employeeNo}`,
+    }));
 
   const itemOptions = availableItems.map((item) => ({
     value: item.itemCode,

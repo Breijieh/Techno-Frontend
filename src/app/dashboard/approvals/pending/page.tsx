@@ -272,7 +272,7 @@ export default function PendingApprovalsPage() {
     } else if (request.requestType === 'LOAN') {
       const loanDetails = details as Record<string, unknown>;
       typeSpecificFields.push(
-        { label: 'مبلغ القرض', value: loanDetails.loanAmount as number | undefined, type: 'currency' },
+        { label: 'مبلغ السلفة', value: loanDetails.loanAmount as number | undefined, type: 'currency' },
         { label: 'الأقساط', value: loanDetails.noOfInstallments as number | undefined },
         { label: 'الدفعة الشهرية', value: loanDetails.installmentAmount as number | undefined, type: 'currency' },
         { label: 'الرصيد المتبقي', value: loanDetails.remainingBalance as number | undefined, type: 'currency' }

@@ -17,6 +17,8 @@ import {
   type InputProps,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { arSA } from 'date-fns/locale';
@@ -135,6 +137,7 @@ interface AnimatedTextFieldProps {
   autoFocus?: boolean;
   inputRef?: React.Ref<HTMLInputElement>;
   InputProps?: Partial<InputProps>;
+  InputLabelProps?: any; // Allow passing InputLabelProps
 }
 
 export const AnimatedTextField = forwardRef<HTMLInputElement, AnimatedTextFieldProps>(
@@ -155,6 +158,7 @@ export const AnimatedTextField = forwardRef<HTMLInputElement, AnimatedTextFieldP
       autoFocus = false,
       inputRef,
       InputProps,
+      InputLabelProps,
     },
     ref
   ) => {
@@ -175,6 +179,7 @@ export const AnimatedTextField = forwardRef<HTMLInputElement, AnimatedTextFieldP
         rows={rows}
         autoFocus={autoFocus}
         InputProps={InputProps}
+        InputLabelProps={InputLabelProps}
         variant="outlined"
         sx={{
           ...SHARED_INPUT_STYLES(error),
@@ -399,6 +404,78 @@ interface AnimatedSwitchProps {
   onChange: (checked: boolean) => void;
   disabled?: boolean;
   helperText?: string;
+}
+
+interface AnimatedTimePickerProps {
+  label: string;
+  value: Date | null | undefined;
+  onChange: (value: Date | null) => void;
+  error?: boolean;
+  helperText?: string;
+  required?: boolean;
+  disabled?: boolean;
+  fullWidth?: boolean;
+  format?: string;
+  ampm?: boolean; // 12h or 24h
+  views?: ('hours' | 'minutes' | 'seconds')[];
+}
+
+export function AnimatedTimePicker({
+  label,
+  value,
+  onChange,
+  error = false,
+  helperText,
+  required = false,
+  disabled = false,
+  fullWidth = true,
+  format,
+  ampm = false, // Default to 24h format
+  views = ['hours', 'minutes'],
+}: AnimatedTimePickerProps) {
+  // Ensure value is never undefined
+  const normalizedValue = value ?? null;
+
+  return (
+    <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={arSA}>
+      <TimePicker
+        label={label}
+        value={normalizedValue}
+        onChange={(newValue: unknown) => onChange(newValue as Date | null)}
+        disabled={disabled}
+        ampm={ampm}
+        viewRenderers={{
+          hours: renderTimeViewClock,
+          minutes: renderTimeViewClock,
+          seconds: renderTimeViewClock,
+        }}
+        views={views}
+        slotProps={{
+          textField: {
+            fullWidth,
+            required,
+            error,
+            helperText,
+            variant: 'outlined',
+            sx: {
+              ...SHARED_INPUT_STYLES(error),
+              // Specific fix for icons in RTL
+              '& .MuiInputAdornment-root': {
+                position: 'absolute',
+                left: '14px',
+                right: 'auto !important',
+                marginLeft: 0,
+              },
+              '& .MuiInputBase-input': {
+                paddingLeft: '50px !important',
+                paddingRight: '16px !important',
+              },
+            },
+          },
+        }}
+      />
+    </LocalizationProvider>
+  );
 }
 
 export function AnimatedSwitch({

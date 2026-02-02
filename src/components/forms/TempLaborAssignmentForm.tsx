@@ -138,10 +138,12 @@ export default function TempLaborAssignmentForm({
     await onSubmit(formData);
   };
 
-  const employeeOptions = (employees || []).map((emp) => ({
-    value: emp.employeeId,
-    label: `${emp.fullName} (${emp.employeeId})`,
-  }));
+  const employeeOptions = (employees || [])
+    .filter((emp) => emp.status === 'ACTIVE' || (initialData && emp.employeeId === initialData.employeeNo))
+    .map((emp) => ({
+      value: emp.employeeId,
+      label: `${emp.fullName} (${emp.employeeId})`,
+    }));
 
   const projectOptions = (projects || []).map((proj) => ({
     value: proj.projectCode,

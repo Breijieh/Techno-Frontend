@@ -78,7 +78,7 @@ export default function LoanRequestForm({
 
     if (!formData.employeeId) newErrors.employeeId = 'الموظف مطلوب';
     if (!formData.loanAmount || formData.loanAmount <= 0) {
-      newErrors.loanAmount = 'يجب أن يكون مبلغ القرض أكبر من 0';
+      newErrors.loanAmount = 'يجب أن يكون مبلغ السلفة أكبر من 0';
     }
     if (!formData.numberOfInstallments || formData.numberOfInstallments < 3) {
       newErrors.numberOfInstallments = 'يجب أن يكون عدد الأقساط 3 على الأقل';
@@ -142,7 +142,7 @@ export default function LoanRequestForm({
       <AnimatedDialog
         open={open}
         onClose={onClose}
-        title={isEdit ? 'تعديل طلب القرض' : 'طلب قرض جديد'}
+        title={isEdit ? 'تعديل طلب السلفة' : 'طلب سلفة جديد'}
         maxWidth="md"
         disableBackdropClick={loading}
         showCloseButton={!loading}
@@ -223,7 +223,7 @@ export default function LoanRequestForm({
           <SmartRow>
             <SmartField>
               <AnimatedNumberField
-                label="مبلغ القرض"
+                label="مبلغ السلفة"
                 value={formData.loanAmount || ''}
                 onChange={(val: number | string) => setFormData({ ...formData, loanAmount: val === '' ? 0 : Number(val) })}
                 error={!!errors.loanAmount}

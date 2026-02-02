@@ -138,7 +138,7 @@ export default function InstallmentPostponePage() {
     const newErrors: { [key: string]: string } = {};
 
     if (!selectedLoanId) {
-      newErrors.selectedLoanId = 'يرجى اختيار قرض';
+      newErrors.selectedLoanId = 'يرجى اختيار سلفة';
     }
 
     if (!originalMonth) {
@@ -291,7 +291,7 @@ export default function InstallmentPostponePage() {
               تأجيل القسط
             </Typography>
             <Typography sx={{ fontSize: '14px', color: '#6B7280' }}>
-              طلب تأجيل قسط القرض إلى شهر آخر
+              طلب تأجيل قسط السلفة إلى شهر آخر
             </Typography>
           </Box>
         </Box>
@@ -306,14 +306,14 @@ export default function InstallmentPostponePage() {
             }}
           >
             <Alert severity="info" sx={{ mb: 2 }}>
-              لا توجد لديك قروض نشطة مع أقساط معلقة.
+              لا توجد لديك سلف نشطة مع أقساط معلقة.
             </Alert>
             <Button
               variant="outlined"
               onClick={() => router.push('/dashboard/self-service/loan')}
               sx={{ textTransform: 'none' }}
             >
-              تقديم طلب قرض
+              تقديم طلب سلفة
             </Button>
           </Paper>
         ) : (
@@ -338,13 +338,13 @@ export default function InstallmentPostponePage() {
               }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827', mb: 3 }}>
-                نموذج طلب تأجيل القسط
+                نموذج طلب تأجيل قسط السلفة
               </Typography>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   select
-                  label="اختر القرض"
+                  label="اختر السلفة"
                   value={selectedLoanId}
                   onChange={(e) => {
                     setSelectedLoanId(e.target.value);
@@ -497,7 +497,7 @@ export default function InstallmentPostponePage() {
               }}
             >
               <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827', mb: 2 }}>
-                طلبات تأجيل الأقساط الخاصة بي
+                طلبات تأجيل الأقساط الخاصة بي (السلف)
               </Typography>
 
               {myPostponements.length === 0 ? (
@@ -522,7 +522,7 @@ export default function InstallmentPostponePage() {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
                           <Box>
                             <Typography sx={{ fontSize: '14px', fontWeight: 600, color: '#111827', mb: 0.5 }}>
-                              القرض #{request.loanId} - {loan ? `${loan.loanAmount.toLocaleString()} ر.س` : 'غير متاح'}
+                              السلفة #{request.loanId} - {loan ? `${loan.loanAmount.toLocaleString()} ر.س` : 'غير متاح'}
                             </Typography>
                             <Typography sx={{ fontSize: '12px', color: '#6B7280' }}>
                               من: {formatMonth(request.originalMonth)}

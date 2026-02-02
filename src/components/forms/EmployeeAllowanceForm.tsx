@@ -110,10 +110,12 @@ export default function EmployeeAllowanceForm({
   const employeeOptions = employeesData?.employees
     ? [
       { value: '', label: 'اختر الموظف' },
-      ...employeesData.employees.map((emp) => ({
-        value: emp.employeeNo,
-        label: `${emp.employeeName || emp.employeeName || 'غير معروف'} (${emp.employeeNo})`,
-      })),
+      ...employeesData.employees
+        .filter((emp) => emp.employmentStatus === 'ACTIVE' || (initialData && emp.employeeNo === initialData.employeeId))
+        .map((emp) => ({
+          value: emp.employeeNo,
+          label: `${emp.employeeName} (${emp.employeeNo})`,
+        })),
     ]
     : [{ value: '', label: 'اختر الموظف' }];
 

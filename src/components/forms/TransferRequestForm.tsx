@@ -136,10 +136,12 @@ export default function TransferRequestForm({
     await onSubmit(submitData);
   };
 
-  const employeeOptions = (employees || []).map((emp) => ({
-    value: emp.employeeId,
-    label: `${emp.fullName} (${emp.employeeId})`,
-  }));
+  const employeeOptions = (employees || [])
+    .filter((emp) => emp.status === 'ACTIVE' || (initialData && emp.employeeId === initialData.employeeId))
+    .map((emp) => ({
+      value: emp.employeeId,
+      label: `${emp.fullName} (${emp.employeeId})`,
+    }));
 
   const projectOptions = (projects || []).map((proj) => ({
     value: proj.projectCode,

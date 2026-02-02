@@ -174,14 +174,14 @@ export default function LoanRequestPage() {
     const newErrors: { [key: string]: string } = {};
 
     if (!loanAmount) {
-      newErrors.loanAmount = 'مبلغ القرض مطلوب';
+      newErrors.loanAmount = 'مبلغ السلفة مطلوب';
     } else {
       const amount = parseFloat(loanAmount);
       const maxAllowedAmount = (employeeResponse?.monthlySalary || 0) * 12;
       if (isNaN(amount) || amount <= 0) {
-        newErrors.loanAmount = 'مبلغ القرض يجب أن يكون أكبر من 0';
+        newErrors.loanAmount = 'مبلغ السلفة يجب أن يكون أكبر من 0';
       } else if (amount > maxAllowedAmount) {
-        newErrors.loanAmount = `مبلغ القرض يتجاوز الحد الأقصى المسموح به (${maxAllowedAmount.toLocaleString()} ريال - 12 شهر راتب)`;
+        newErrors.loanAmount = `مبلغ السلفة يتجاوز الحد الأقصى المسموح به (${maxAllowedAmount.toLocaleString()} ريال - 12 شهر راتب)`;
       }
     }
 
@@ -213,12 +213,12 @@ export default function LoanRequestPage() {
     }
 
     if (employeeResponse?.employmentStatus !== 'ACTIVE') {
-      newErrors.general = 'يجب أن يكون الموظف على رأس العمل ليتمكن من طلب قرض.';
+      newErrors.general = 'يجب أن يكون الموظف على رأس العمل ليتمكن من طلب سلفة.';
     }
 
     const hasActiveLoan = myLoanRequests.some(loan => loan.status === 'APPROVED' && loan.remainingBalance > 0);
     if (hasActiveLoan) {
-      newErrors.general = 'يوجد لديك قرض نشط حالياً. لا يمكن تقديم طلب جديد.';
+      newErrors.general = 'يوجد لديك سلفة نشطة حالياً. لا يمكن تقديم طلب جديد.';
     }
 
     if (serviceDurationMonths < 6) {
@@ -258,7 +258,7 @@ export default function LoanRequestPage() {
     } catch (error) {
       console.error('Error submitting loan request:', error);
       setErrors({
-        general: error instanceof Error ? error.message : 'فشل إرسال طلب القرض',
+        general: error instanceof Error ? error.message : 'فشل إرسال طلب السلفة',
       });
     } finally {
       setIsSubmitting(false);
@@ -267,7 +267,7 @@ export default function LoanRequestPage() {
 
   const handleDownloadContract = async (loanId: number) => {
     try {
-      toast.showSuccess('جارٍ تحميل عقد القرض...');
+      toast.showSuccess('جارٍ تحميل عقد السلفة...');
       const blob = await loansApi.downloadLoanContract(loanId);
 
       // Create download link
@@ -283,7 +283,7 @@ export default function LoanRequestPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading contract:', error);
-      toast.showError('فشل تحميل عقد القرض. يرجى المحاولة مرة أخرى.');
+      toast.showError('فشل تحميل عقد السلفة. يرجى المحاولة مرة أخرى.');
     }
   };
 
@@ -330,7 +330,7 @@ export default function LoanRequestPage() {
       }}
     >
       <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
-        تفاصيل القرض - {selectedLoan?.loanAmount?.toLocaleString()} ريال
+        تفاصيل السلفة - {selectedLoan?.loanAmount?.toLocaleString()} ريال
       </DialogTitle>
       <DialogContent dividers>
         {loadingDetails ? (
@@ -415,10 +415,10 @@ export default function LoanRequestPage() {
 
   const LoanSuccessDialog = () => (
     <Dialog open={submitSuccess} onClose={() => setSubmitSuccess(false)}>
-      <DialogTitle>تم إرسال طلب القرض</DialogTitle>
+      <DialogTitle>تم إرسال طلب السلفة</DialogTitle>
       <DialogContent>
         <Typography>
-          تم إرسال طلب القرض بنجاح. سيتم مراجعته من قبل مدير الموارد البشرية ومدير المالية.
+          تم إرسال طلب السلفة بنجاح. سيتم مراجعته من قبل مدير الموارد البشرية ومدير المالية.
         </Typography>
       </DialogContent>
       <DialogActions>
@@ -471,7 +471,7 @@ export default function LoanRequestPage() {
           </Button>
           <Box>
             <Typography variant="h5" sx={{ fontWeight: 700, color: '#111827', mb: 0.5 }}>
-              تقديم طلب قرض
+              تقديم طلب سلفة
             </Typography>
             <Typography sx={{ fontSize: '14px', color: '#6B7280' }}>
               التقدم بطلب سلفة راتب مع جدولة الأقساط
@@ -578,7 +578,7 @@ export default function LoanRequestPage() {
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827', mb: 3 }}>
-              نموذج طلب القرض
+              نموذج طلب سلفة
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -594,7 +594,7 @@ export default function LoanRequestPage() {
               )}
 
               <TextField
-                label="مبلغ القرض (ريال)"
+                label="مبلغ السلفة (ريال)"
                 type="number"
                 value={loanAmount}
                 onChange={(e) => setLoanAmount(e.target.value)}
@@ -648,7 +648,7 @@ export default function LoanRequestPage() {
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <Typography sx={{ fontSize: '14px', color: '#6B7280' }}>
-                    إجمالي الخصم الشهري (مع القرض الجديد)
+                    إجمالي الخصم الشهري (مع السلفة الجديدة)
                   </Typography>
                   <Typography
                     sx={{
@@ -673,7 +673,7 @@ export default function LoanRequestPage() {
                 rows={4}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="قدم سبب طلب القرض..."
+                placeholder="قدم سبب طلب السلفة..."
                 fullWidth
               />
 
@@ -697,7 +697,7 @@ export default function LoanRequestPage() {
                   },
                 }}
               >
-                {isSubmitting ? 'جارٍ الإرسال...' : 'إرسال طلب القرض'}
+                {isSubmitting ? 'جارٍ الإرسال...' : 'إرسال طلب السلفة'}
               </Button>
             </Box>
           </Paper>
@@ -718,12 +718,12 @@ export default function LoanRequestPage() {
             }}
           >
             <Typography variant="h6" sx={{ fontWeight: 600, color: '#111827', mb: 2 }}>
-              طلبات القروض الخاصة بي
+              طلبات السلف الخاصة بي
             </Typography>
 
             {myLoanRequests.length === 0 ? (
               <Typography sx={{ fontSize: '14px', color: '#6B7280', fontStyle: 'italic', textAlign: 'center', py: 4 }}>
-                لا توجد طلبات قروض حتى الآن
+                لا توجد طلبات سلف حتى الآن
               </Typography>
             ) : (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

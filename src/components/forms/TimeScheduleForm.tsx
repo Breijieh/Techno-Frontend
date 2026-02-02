@@ -9,6 +9,7 @@ import {
 import {
   Save,
   Cancel,
+  AccessTime,
 } from '@mui/icons-material';
 import AnimatedDialog from '@/components/common/AnimatedDialog';
 import {
@@ -30,11 +31,15 @@ function calculateRequiredHours(entryTime: string, exitTime: string): number {
 
   try {
     const [entryHours, entryMinutes] = entryTime.split(':').map(Number);
-    const [exitHours, exitMinutes] = exitTime.split(':').map(Number);
+    let [exitHours, exitMinutes] = exitTime.split(':').map(Number);
 
     if (isNaN(entryHours) || isNaN(entryMinutes) || isNaN(exitHours) || isNaN(exitMinutes)) {
       return 0;
     }
+
+    // Handle 24:00 as 00:00 for internal calculation logic if needed, 
+    // but here we treat 00:00 as next day if it appears as exit time
+    if (exitHours === 24) exitHours = 0;
 
     const entryTotalMinutes = entryHours * 60 + entryMinutes;
     let exitTotalMinutes = exitHours * 60 + exitMinutes;
@@ -53,6 +58,7 @@ function calculateRequiredHours(entryTime: string, exitTime: string): number {
     return 0;
   }
 }
+
 
 interface TimeScheduleFormProps {
   open: boolean;
@@ -214,9 +220,17 @@ export default function TimeScheduleForm({
     if (!validate()) return;
 
     // Ensure requiredHours is set to calculated value
+    // Normalize times: Convert 24:00 to 00:00 for backend compatibility
+    const normalizeTime = (time: string) => {
+      if (time === '24:00') return '00:00';
+      return time;
+    };
+
     const submitData = {
       ...formData,
       requiredHours: calculatedRequiredHours,
+      entryTime: normalizeTime(formData.entryTime || ''),
+      exitTime: normalizeTime(formData.exitTime || ''),
     };
 
     await onSubmit(submitData);
@@ -308,7 +322,7 @@ export default function TimeScheduleForm({
             <AnimatedNumberField
               label="الساعات المطلوبة"
               value={calculatedRequiredHours || ''}
-              onChange={() => {}} // Read-only - auto-calculated
+              onChange={() => { }} // Read-only - auto-calculated
               error={!!errors.requiredHours}
               helperText={errors.requiredHours || 'يتم الحساب تلقائياً من وقت الدخول والخروج'}
               required
@@ -338,9 +352,28 @@ export default function TimeScheduleForm({
               value={formData.entryTime || ''}
               onChange={(val: string) => setFormData({ ...formData, entryTime: val })}
               error={!!errors.entryTime}
-              helperText={errors.entryTime || 'التنسيق: س:د (24 ساعة) - مثال: 08:00 أو 08:30'}
+              helperText={errors.entryTime || 'التنسيق: س:د (24 ساعة)'}
               required
-              placeholder="08:00 أو 08:30"
+              type="time"
+              InputLabelProps={{ shrink: true }}
+              InputProps={{
+                sx: {
+                  '& input': {
+                    textAlign: 'center !important', // Force center alignment
+                    fontSize: '1.rem', // Slightly larger font for time
+                    fontWeight: 600,
+                  },
+                  // Style the native time picker indicator
+                  '& input::-webkit-calendar-picker-indicator': {
+                    cursor: 'pointer',
+                    opacity: 0.6,
+                    transition: '0.2s',
+                    '&:hover': { opacity: 1 },
+                    width: '24px',
+                    height: '24px',
+                  }
+                }
+              }}
             />
           </SmartField>
           <SmartField>
@@ -349,9 +382,27 @@ export default function TimeScheduleForm({
               value={formData.exitTime || ''}
               onChange={(val: string) => setFormData({ ...formData, exitTime: val })}
               error={!!errors.exitTime}
-              helperText={errors.exitTime || 'التنسيق: س:د (24 ساعة) - مثال: 17:00 أو 17:30'}
+              helperText={errors.exitTime || 'التنسيق: س:د (24 ساعة)'}
               required
-              placeholder="17:00 أو 17:30"
+              type="time"
+              InputLabelProps={{ shrink: true }}
+              InputProps={{
+                sx: {
+                  '& input': {
+                    textAlign: 'center !important', // Force center alignment
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                  },
+                  '& input::-webkit-calendar-picker-indicator': {
+                    cursor: 'pointer',
+                    opacity: 0.6,
+                    transition: '0.2s',
+                    '&:hover': { opacity: 1 },
+                    width: '24px',
+                    height: '24px',
+                  }
+                }
+              }}
             />
           </SmartField>
         </SmartRow>

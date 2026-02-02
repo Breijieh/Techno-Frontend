@@ -154,11 +154,13 @@ export default function LaborAssignmentForm({
   };
 
   const employeeOptions: { value: number; label: string }[] = [
-    { value: 0, label: 'اختر الموظف' },
-    ...(employees || []).map((emp) => ({
-      value: emp.employeeId,
-      label: `${emp.fullName} (${emp.employeeId})`,
-    })),
+    // { value: 0, label: 'اختر الموظف' }, // Removed to allow clearing
+    ...(employees || [])
+      .filter((emp) => emp.status === 'ACTIVE' || (initialData && emp.employeeId === initialData.employeeId))
+      .map((emp) => ({
+        value: emp.employeeId,
+        label: `${emp.fullName} (${emp.employeeId})`,
+      })),
   ];
 
   const projectOptions = (projects || []).map((proj) => ({
@@ -247,11 +249,16 @@ export default function LaborAssignmentForm({
               },
             }}
           >
-            <AnimatedSelect
+            <AnimatedAutocomplete
               label="المشروع"
-              value={formData.projectCode || 0}
-              onChange={(val: string | number) => setFormData({ ...formData, projectCode: val as number })}
-              options={[{ value: 0, label: 'اختر المشروع' }, ...projectOptions]}
+              value={projectOptions.find((opt) => opt.value === (formData.projectCode || 0)) ?? null}
+              onChange={(val) => {
+                const option = val as { value: number; label: string } | null;
+                setFormData({ ...formData, projectCode: option?.value ?? 0 });
+              }}
+              options={projectOptions}
+              getOptionLabel={(opt) => (opt as { label: string }).label}
+              getOptionKey={(opt) => (opt as { value: number }).value}
               error={!!errors.projectCode}
               helperText={errors.projectCode}
               required
@@ -287,7 +294,7 @@ export default function LaborAssignmentForm({
             <AnimatedTextField
               label="التخصص"
               value={specializationDisplayText}
-              onChange={() => {}}
+              onChange={() => { }}
               disabled
               helperText={errors.specialization || (selectedEmployee ? 'يُعرض من المسمى الوظيفي للموظف المختار' : undefined)}
               error={!!errors.specialization}

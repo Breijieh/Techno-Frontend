@@ -40,20 +40,28 @@ import { useApiWithToast } from '@/hooks/useApiWithToast';
 import 'leaflet/dist/leaflet.css';
 import { formatDate, getTodayLocalDate } from '@/lib/utils/dateFormatter';
 
-// Helper function to format time from ISO string to HH:mm
+// Helper function to format time from ISO string to HH:mm AM/PM
 const formatTimeDisplay = (timeString: string | null | undefined): string => {
     if (!timeString) return '';
     try {
         const date = new Date(timeString);
         if (!isNaN(date.getTime())) {
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
-            return `${hours}:${minutes}`;
+            const h = date.getHours();
+            const m = date.getMinutes();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const displayH = h % 12 || 12;
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            return `${displayH}:${pad(m)} ${ampm}`;
         }
         // Try parsing as time string directly (HH:mm:ss or HH:mm)
         const timeMatch = timeString.match(/(\d{2}):(\d{2})/);
         if (timeMatch) {
-            return `${timeMatch[1]}:${timeMatch[2]}`;
+            let h = parseInt(timeMatch[1], 10);
+            const m = parseInt(timeMatch[2], 10);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            const pad = (n: number) => n.toString().padStart(2, '0');
+            return `${h}:${pad(m)} ${ampm}`;
         }
         return timeString;
     } catch {
@@ -92,8 +100,12 @@ interface Location {
     lng: number;
 }
 
+import { useClientTime } from '@/hooks/useClientTime';
+// ... other imports
+
 export default function AttendanceCheckIn() {
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const currentTime = useClientTime();
+    // const [currentTime, setCurrentTime] = useState(new Date()); // Removed
     const [userLocation, setUserLocation] = useState<Location | null>(null);
     const [project, setProject] = useState<ProjectResponse | null>(null);
     const [todayAttendance, setTodayAttendance] = useState<AttendanceResponse | null>(null);
@@ -155,11 +167,11 @@ export default function AttendanceCheckIn() {
         }
     }, [isMounted, project?.projectLatitude, project?.projectLongitude]);
 
-    // --- 2. Clock Effect ---
-    useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-        return () => clearInterval(timer);
-    }, []);
+    // --- 2. Clock Effect - Replaced by useClientTime --- 
+    // useEffect(() => {
+    //     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    //     return () => clearInterval(timer);
+    // }, []);
 
     // --- 3. Initial Data Fetch ---
     useEffect(() => {
@@ -388,6 +400,8 @@ export default function AttendanceCheckIn() {
         const [endHour, endMinute] = workEndTime.split(':').map(Number);
         const [startHour, startMinute] = workStartTime.split(':').map(Number);
 
+        if (!currentTime) return false;
+
         const currentHour = currentTime.getHours();
         const currentMinute = currentTime.getMinutes();
 
@@ -412,16 +426,34 @@ export default function AttendanceCheckIn() {
 
     // Time Comparison Message
     const timeStatusMessage = useMemo(() => {
+        if (!currentTime) return { text: 'جارٍ تحميل الوقت...', color: 'default', status: 'LOADING' };
+
         // If user has already checked in, use entry time instead of current time
         const timeToCompare = (todayAttendance?.entryTime && isTodayAttendance)
             ? new Date(todayAttendance.entryTime)
             : currentTime;
 
         const [startHour, startMinute] = workStartTime.split(':').map(Number);
-        const startTime = new Date(timeToCompare);
+
+        const startTime = new Date(currentTime);
         startTime.setHours(startHour, startMinute, 0, 0);
 
-        const diffMs = timeToCompare.getTime() - startTime.getTime();
+        // Handle shifts that start tomorrow relative to current time (e.g. 1 AM shift current time 11 PM)
+        // If start time (e.g. 1 AM today) is > 12 hours ago, and we are late at night (e.g. 23:00)
+        // Then the shift probably starts tomorrow at 1 AM.
+        // Or if schedule implies overnight (e.g. 22:00 to 06:00), handled by normal logic.
+        // But for "Next Day" starts (User case: 01:00 - 03:00, current 23:55), 
+        // 01:00 today was 22 hours ago. 01:00 tomorrow is 1 hour away.
+
+        let diffMs = timeToCompare.getTime() - startTime.getTime();
+
+        // Heuristic: If we are "Late" by more than 12 hours, assume the shift is actually for tomorrow
+        // This handles the case where it's 23:55 and shift is 01:00 AM (which is technically "tomorrow")
+        if (diffMs > 12 * 60 * 60 * 1000 && !hasCheckedIn) {
+            startTime.setDate(startTime.getDate() + 1);
+            diffMs = timeToCompare.getTime() - startTime.getTime();
+        }
+
         const diffMins = Math.floor(Math.abs(diffMs) / 60000);
         const diffHours = Math.floor(diffMins / 60);
         const remainingMins = diffMins % 60;
@@ -500,50 +532,62 @@ export default function AttendanceCheckIn() {
         { successMessage: 'تم تسجيل الانصراف بنجاح' }
     );
 
-    const { execute: submitManualRequest, loading: submittingManual } = useApiWithToast(
-        async () => {
-            if (!employeeNo) return;
-            if (!manualReason) {
-                setManualErrors({ reason: 'سبب الطلب مطلوب' });
-                return;
-            }
-            if (!manualEntryTime) {
-                setManualErrors({ entryTime: 'وقت الدخول مطلوب' });
-                return;
-            }
-
-            // Determine effective exit time: use provided value or default to work end time
-            const effectiveExitTime = manualExitTime || workEndTime || '17:00';
-
-            // Validate exit time is after entry time
-            if (effectiveExitTime <= manualEntryTime) {
-                setManualErrors({ exitTime: 'وقت الانصراف يجب أن يكون بعد وقت الدخول' });
-                return;
-            }
-
-            // Check if manualDate is in the future
-            const today = getTodayLocalDate();
-            if (manualDate > today) {
-                setManualErrors({ date: 'لا يمكن تقديم طلب لتاريخ مستقبلي' });
-                return;
-            }
-
-            await manualAttendanceRequestApi.submitManualAttendanceRequest({
-                employeeNo,
-                attendanceDate: manualDate,
-                entryTime: manualEntryTime,
-                exitTime: effectiveExitTime,
-                reason: manualReason,
-            });
+    const { execute: executeManualRequest, loading: submittingManual } = useApiWithToast(
+        async (data: { employeeNo: number, attendanceDate: string, entryTime: string, exitTime: string, reason: string }) => {
+            await manualAttendanceRequestApi.submitManualAttendanceRequest(data);
 
             setManualDialogOpen(false);
             setManualReason('');
             setManualEntryTime('');
             setManualExitTime('');
             setManualDate(getTodayLocalDate());
+            setManualErrors({});
         },
         { successMessage: 'تم إرسال طلب الحضور اليدوي' }
     );
+
+    const submitManualRequest = async () => {
+        if (!employeeNo) return;
+
+        const newErrors: { [key: string]: string } = {};
+
+        if (!manualReason) {
+            newErrors.reason = 'سبب الطلب مطلوب';
+        }
+        if (!manualEntryTime) {
+            newErrors.entryTime = 'وقت الدخول مطلوب';
+        }
+
+        // Determine effective exit time: use provided value or default to work end time
+        const effectiveExitTime = manualExitTime || workEndTime || '17:00';
+
+        // Validate exit time is after entry time
+        if (effectiveExitTime <= manualEntryTime) {
+            newErrors.exitTime = 'وقت الانصراف يجب أن يكون بعد وقت الدخول';
+        }
+
+        // Check if manualDate is in the future
+        const today = getTodayLocalDate();
+        if (manualDate > today) {
+            newErrors.date = 'لا يمكن تقديم طلب لتاريخ مستقبلي';
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setManualErrors(newErrors);
+            return;
+        }
+
+        // Clear errors before submitting
+        setManualErrors({});
+
+        await executeManualRequest({
+            employeeNo,
+            attendanceDate: manualDate,
+            entryTime: manualEntryTime,
+            exitTime: effectiveExitTime,
+            reason: manualReason,
+        });
+    };
 
     // --- Render ---
 
@@ -591,15 +635,23 @@ export default function AttendanceCheckIn() {
                         تسجيل الحضور اليومي
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                        {formatDate(currentTime)}
+                        {currentTime ? currentTime.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '...'}
                     </Typography>
                     <Typography variant="caption" sx={{ color: '#6B7280', display: 'block', mt: 0.5 }}>
                         دوام: {workStartTime} - {workEndTime}
                     </Typography>
                 </Box>
                 <Box sx={{ textAlign: 'left' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#0c2b7a', fontFamily: 'monospace' }}>
-                        {currentTime.toLocaleTimeString('en-US', { hour12: false })}
+                    <Typography variant="h4" sx={{ fontWeight: 800, color: '#0c2b7a', fontFamily: 'monospace', direction: 'ltr' }}>
+                        {currentTime ? (() => {
+                            const h = currentTime.getHours();
+                            const m = currentTime.getMinutes();
+                            const s = currentTime.getSeconds();
+                            const ampm = h >= 12 ? 'PM' : 'AM';
+                            const displayH = h % 12 || 12;
+                            const pad = (n: number) => n.toString().padStart(2, '0');
+                            return `${displayH}:${pad(m)}:${pad(s)} ${ampm}`;
+                        })() : '--:--:--'}
                     </Typography>
                     <Chip
                         label={timeStatusMessage.text}
@@ -635,13 +687,6 @@ export default function AttendanceCheckIn() {
                         zoom={15}
                         style={{ height: '100%', width: '100%' }}
                         dragging={false}
-                        zoomControl={true}
-                        whenReady={() => {
-                            // Map is ready, ensure container exists
-                            if (!mapContainerRef.current) {
-                                console.warn('Map container ref is null when map is ready');
-                            }
-                        }}
                     >
                         <TileLayer
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

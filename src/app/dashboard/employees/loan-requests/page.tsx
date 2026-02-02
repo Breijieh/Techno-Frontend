@@ -128,7 +128,7 @@ export default function LoanRequestsPage() {
 
       return response;
     },
-    { silent: true, errorMessage: 'فشل تحميل طلبات القروض' }
+    { silent: true, errorMessage: 'فشل تحميل طلبات السلف' }
   );
 
   // Fetch loan requests when pagination changes
@@ -190,8 +190,8 @@ export default function LoanRequestsPage() {
       setSelectedRequest(null);
     },
     {
-      successMessage: 'تم إرسال طلب القرض بنجاح',
-      errorMessage: 'فشل إرسال طلب القرض',
+      successMessage: 'تم إرسال طلب السلفة بنجاح',
+      errorMessage: 'فشل إرسال طلب السلفة',
     }
   );
 
@@ -218,8 +218,8 @@ export default function LoanRequestsPage() {
       setApprovalAction(null);
     },
     {
-      successMessage: 'تمت الموافقة على طلب القرض بنجاح',
-      errorMessage: 'فشل الموافقة على طلب القرض',
+      successMessage: 'تمت الموافقة على طلب السلفة بنجاح',
+      errorMessage: 'فشل الموافقة على طلب السلفة',
     }
   );
 
@@ -246,8 +246,8 @@ export default function LoanRequestsPage() {
       setApprovalAction(null);
     },
     {
-      successMessage: 'تم رفض طلب القرض بنجاح',
-      errorMessage: 'فشل رفض طلب القرض',
+      successMessage: 'تم رفض طلب السلفة بنجاح',
+      errorMessage: 'فشل رفض طلب السلفة',
     }
   );
 
@@ -265,7 +265,7 @@ export default function LoanRequestsPage() {
     () => [
       {
         accessorKey: 'loanId',
-        header: 'رقم القرض',
+        header: 'رقم السلفة',
         size: 100,
       },
       {
@@ -287,7 +287,7 @@ export default function LoanRequestsPage() {
       },
       {
         accessorKey: 'loanAmount',
-        header: 'مبلغ القرض',
+        header: 'مبلغ السلفة',
         size: 140,
         filterVariant: 'range',
         filterFn: 'betweenInclusive',
@@ -452,7 +452,7 @@ export default function LoanRequestsPage() {
     renderEmptyRowsFallback: () => (
       <Box sx={{ p: 3, textAlign: 'center' }}>
         <Typography sx={{ color: '#6B7280', fontSize: '14px' }}>
-          لم يتم العثور على طلبات قروض.
+          لم يتم العثور على طلبات سلف.
         </Typography>
       </Box>
     ),
@@ -522,7 +522,7 @@ export default function LoanRequestsPage() {
               },
             }}
           >
-            طلب قرض جديد
+            طلب سلفة جديد
           </Button>
           <Tooltip title="تحديث البيانات">
             <span>
@@ -737,7 +737,7 @@ export default function LoanRequestsPage() {
               variant="h6"
               sx={{ fontWeight: 700, color: '#111827' }}
             >
-              طلبات القروض - ملء الشاشة
+              طلبات السلف - ملء الشاشة
             </Typography>
             <Tooltip title="الخروج من ملء الشاشة (ESC)">
               <IconButton
@@ -791,10 +791,10 @@ export default function LoanRequestsPage() {
               variant="h5"
               sx={{ fontWeight: 700, color: '#111827', mb: 0.5 }}
             >
-              طلبات القروض
+              طلبات السلف
             </Typography>
             <Typography sx={{ fontSize: '14px', color: '#6B7280' }}>
-              إدارة طلبات قروض الموظفين مع جدولة الأقساط التلقائية
+              إدارة طلبات سلف الموظفين مع جدولة الأقساط التلقائية
             </Typography>
           </Box>
 
@@ -839,11 +839,11 @@ export default function LoanRequestsPage() {
             handleApprovalAction('reject', notes);
           }
         }}
-        title={approvalAction === 'approve' ? 'الموافقة على طلب القرض' : 'رفض طلب القرض'}
+        title={approvalAction === 'approve' ? 'الموافقة على طلب السلفة' : 'رفض طلب السلفة'}
         message={approvalAction === 'approve'
-          ? 'هل أنت متأكد أنك تريد الموافقة على طلب القرض هذا؟'
-          : 'هل أنت متأكد أنك تريد رفض طلب القرض هذا؟ يرجى تقديم سبب للرفض.'}
-        itemName={selectedRequest ? `طلب القرض #${selectedRequest.loanId} - ${getEmployeeName(selectedRequest.employeeId)} - ر.س ${selectedRequest.loanAmount.toLocaleString('ar-SA')}` : undefined}
+          ? 'هل أنت متأكد أنك تريد الموافقة على طلب السلفة هذا؟'
+          : 'هل أنت متأكد أنك تريد رفض طلب السلفة هذا؟ يرجى تقديم سبب للرفض.'}
+        itemName={selectedRequest ? `طلب السلفة #${selectedRequest.loanId} - ${getEmployeeName(selectedRequest.employeeId)} - ر.س ${selectedRequest.loanAmount.toLocaleString('ar-SA')}` : undefined}
         loading={isLoading}
         showNotes={true}
         requireNotes={approvalAction === 'reject'}

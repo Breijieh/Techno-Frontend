@@ -181,6 +181,16 @@ export default function SalaryCalculationPage() {
     exportDataToCSV(salaryHeaders as unknown as Record<string, unknown>[], `salary-calculation-${selectedMonth}`);
   };
 
+  const employeeFilterOptions = useMemo(() => {
+    if (!employeesResponse?.employees) return [];
+    return employeesResponse.employees
+      .map(emp => ({
+        text: emp.employeeName || emp.employeeName || `Unknown (${emp.employeeNo})`,
+        value: emp.employeeNo // Keep value as number
+      }))
+      .sort((a, b) => a.text.localeCompare(b.text));
+  }, [employeesResponse]);
+
   const columns = useMemo<MRT_ColumnDef<SalaryHeader>[]>(
     () => [
       {
@@ -188,8 +198,14 @@ export default function SalaryCalculationPage() {
         header: 'الموظف',
         size: 200,
         filterVariant: 'multi-select',
+        filterSelectOptions: employeeFilterOptions, // Use explicit options to avoid MRT auto-generating/sorting numbers
         meta: {
           getFilterLabel: (row: SalaryHeader) => getEmployeeName(row.employeeNo)
+        },
+        sortingFn: (rowA, rowB) => {
+          const nameA = getEmployeeName(rowA.original.employeeNo) || '';
+          const nameB = getEmployeeName(rowB.original.employeeNo) || '';
+          return nameA.localeCompare(nameB);
         },
         Cell: ({ cell }) => getEmployeeName(cell.getValue<number>()),
       },

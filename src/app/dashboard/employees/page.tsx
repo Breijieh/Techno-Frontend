@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -148,6 +148,20 @@ export default function EmployeesListPage() {
     };
     loadEmployees();
   }, [fetchEmployees, pagination]);
+
+  // Scroll table to the right on load (RTL behavior)
+  useEffect(() => {
+    if (employees.length > 0 && !loadingEmployees) {
+      // Small delay to ensure the table is rendered
+      const timer = setTimeout(() => {
+        const tableContainer = document.querySelector('.MuiTableContainer-root');
+        if (tableContainer) {
+          tableContainer.scrollLeft = tableContainer.scrollWidth;
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [employees.length, loadingEmployees]);
 
   // Handle ESC key to exit fullscreen
   useEffect(() => {
@@ -448,16 +462,16 @@ export default function EmployeesListPage() {
         }
       },
       {
-        accessorKey: 'fullName',
-        header: 'الاسم الكامل',
-        size: 200,
-      },
-      {
         id: 'departmentCode',
         header: 'القسم',
         size: 150,
         accessorFn: (row) => getDepartmentName(row.departmentCode),
         filterVariant: 'multi-select',
+      },
+      {
+        accessorKey: 'fullName',
+        header: 'الاسم الكامل',
+        size: 200,
       },
       {
         accessorKey: 'employeeId',
@@ -478,8 +492,12 @@ export default function EmployeesListPage() {
     enableColumnOrdering: true,
     enableColumnResizing: true,
     enableStickyHeader: true,
-    enableDensityToggle: true,
+    enableDensityToggle: true, // Keep density toggle
     enableFullScreenToggle: false,
+    enableGlobalFilter: true, // Keep global filter functionality
+    enableGlobalFilterModes: false, // Disable filter mode switching
+    positionGlobalFilter: 'none', // Hide MRT's built-in search (we use custom)
+    enableToolbarInternalActions: true, // Keep MRT toolbar icons (columns, density)
     manualPagination: true,
     rowCount: totalElements,
     onPaginationChange: setPagination,
@@ -493,7 +511,7 @@ export default function EmployeesListPage() {
       pagination: { pageSize: 25, pageIndex: 0 },
       columnPinning: {
         left: ['mrt-row-actions'], // Physical left is logical end in Pseudo-RTL
-        right: ['mrt-row-select', 'mrt-row-expand'], // Physical right is logical start in Pseudo-RTL
+        right: ['mrt-row-expand'], // Physical right is logical start in Pseudo-RTL
       },
     },
     columnResizeMode: 'onChange',
@@ -531,6 +549,8 @@ export default function EmployeesListPage() {
       sx: {
         ...(lightTableTheme.muiTopToolbarProps as { sx?: Record<string, unknown> })?.sx,
         direction: 'rtl',
+        padding: '12px 16px',
+        borderBottom: '1px solid #E5E7EB',
       },
     },
     muiBottomToolbarProps: {
