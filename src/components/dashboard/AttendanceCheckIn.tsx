@@ -65,7 +65,7 @@ const formatTimeDisplay = (timeString: string | null | undefined): string => {
 // Using loading component to ensure proper initialization
 const MapContainer = dynamic(
     () => import('react-leaflet').then((mod) => mod.MapContainer),
-    { 
+    {
         ssr: false,
         loading: () => <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><CircularProgress /></Box>
     }
@@ -135,7 +135,7 @@ export default function AttendanceCheckIn() {
             });
         });
     }, [isMounted]);
-    
+
     // Update mapReady when project coordinates are available and container exists
     useEffect(() => {
         if (isMounted && project?.projectLatitude && project?.projectLongitude) {
@@ -172,7 +172,7 @@ export default function AttendanceCheckIn() {
 
                 // Get Project Details first (needed for schedule lookup)
                 let projectCode = employee.primaryProjectCode;
-                
+
                 // If no primaryProjectCode, check for active labor assignments as fallback
                 // Note: This endpoint may require ADMIN/HR_MANAGER role, so it might fail for regular employees
                 if (!projectCode) {
@@ -206,7 +206,7 @@ export default function AttendanceCheckIn() {
                         console.warn('Could not check labor assignments (may require admin role):', assignErr);
                     }
                 }
-                
+
                 if (projectCode) {
                     try {
                         const proj = await projectsApi.getProjectById(projectCode);
@@ -240,7 +240,7 @@ export default function AttendanceCheckIn() {
                         console.error(`Failed to load project ${projectCode}:`, projErr);
                         // Log detailed error for debugging
                         if (projErr instanceof Error) {
-                            const errorMsg = projErr.message.includes('تم رفض الوصول') 
+                            const errorMsg = projErr.message.includes('تم رفض الوصول')
                                 ? 'لا توجد صلاحية لعرض تفاصيل المشروع'
                                 : `فشل تحميل المشروع: ${projErr.message}`;
                             setProjectError(errorMsg);
@@ -267,27 +267,27 @@ export default function AttendanceCheckIn() {
                 try {
                     const schedules = await timeSchedulesApi.getAllSchedules();
                     const empDeptCode = employee.primaryDeptCode;
-                    
+
                     // Priority: Project schedule > Department schedule > Default schedule
                     let schedule = null;
-                    
+
                     // Priority 1: Project-specific schedule
                     if (projectCode) {
-                        schedule = schedules.find(s => 
+                        schedule = schedules.find(s =>
                             s.projectCode === projectCode && s.isActive === 'Y'
                         );
                     }
-                    
+
                     // Priority 2: Department-specific schedule
                     if (!schedule && empDeptCode) {
-                        schedule = schedules.find(s => 
+                        schedule = schedules.find(s =>
                             s.departmentCode === empDeptCode && s.isActive === 'Y'
                         );
                     }
-                    
+
                     // Priority 3: Default schedule (no project or department)
                     if (!schedule) {
-                        schedule = schedules.find(s => 
+                        schedule = schedules.find(s =>
                             !s.departmentCode && !s.projectCode && s.isActive === 'Y'
                         );
                     }
@@ -384,20 +384,20 @@ export default function AttendanceCheckIn() {
     // Check if current time is after scheduled end time
     const isAfterEndTime = useMemo(() => {
         if (hasCheckedIn) return false; // Already checked in, no need to validate
-        
+
         const [endHour, endMinute] = workEndTime.split(':').map(Number);
         const [startHour, startMinute] = workStartTime.split(':').map(Number);
-        
+
         const currentHour = currentTime.getHours();
         const currentMinute = currentTime.getMinutes();
-        
+
         const currentTimeMinutes = currentHour * 60 + currentMinute;
         const endTimeMinutes = endHour * 60 + endMinute;
         const startTimeMinutes = startHour * 60 + startMinute;
-        
+
         // Check if schedule crosses midnight (end time < start time)
         const crossesMidnight = endTimeMinutes < startTimeMinutes;
-        
+
         if (crossesMidnight) {
             // For midnight-crossing schedules (e.g., 22:00 to 06:00)
             // Check-in is invalid if current time is after end time AND before start time
@@ -413,8 +413,8 @@ export default function AttendanceCheckIn() {
     // Time Comparison Message
     const timeStatusMessage = useMemo(() => {
         // If user has already checked in, use entry time instead of current time
-        const timeToCompare = (todayAttendance?.entryTime && isTodayAttendance) 
-            ? new Date(todayAttendance.entryTime) 
+        const timeToCompare = (todayAttendance?.entryTime && isTodayAttendance)
+            ? new Date(todayAttendance.entryTime)
             : currentTime;
 
         const [startHour, startMinute] = workStartTime.split(':').map(Number);
@@ -497,7 +497,7 @@ export default function AttendanceCheckIn() {
             const attendance = await attendanceApi.getTodayAttendance(employeeNo);
             setTodayAttendance(attendance);
         },
-        { successMessage: 'تم تسجيل الخروج بنجاح' }
+        { successMessage: 'تم تسجيل الانصراف بنجاح' }
     );
 
     const { execute: submitManualRequest, loading: submittingManual } = useApiWithToast(
@@ -512,9 +512,12 @@ export default function AttendanceCheckIn() {
                 return;
             }
 
-            // If manualExitTime provided, ensure it is after entry
-            if (manualExitTime && manualEntryTime && manualExitTime <= manualEntryTime) {
-                setManualErrors({ exitTime: 'وقت الخروج يجب أن يكون بعد وقت الدخول' });
+            // Determine effective exit time: use provided value or default to work end time
+            const effectiveExitTime = manualExitTime || workEndTime || '17:00';
+
+            // Validate exit time is after entry time
+            if (effectiveExitTime <= manualEntryTime) {
+                setManualErrors({ exitTime: 'وقت الانصراف يجب أن يكون بعد وقت الدخول' });
                 return;
             }
 
@@ -529,7 +532,7 @@ export default function AttendanceCheckIn() {
                 employeeNo,
                 attendanceDate: manualDate,
                 entryTime: manualEntryTime,
-                exitTime: manualExitTime || '00:00', // Backend expects string
+                exitTime: effectiveExitTime,
                 reason: manualReason,
             });
 
@@ -608,7 +611,7 @@ export default function AttendanceCheckIn() {
             </Box>
 
             {/* Map Section */}
-            <Box 
+            <Box
                 ref={mapContainerRef}
                 sx={{ height: 300, width: '100%', borderRadius: '12px', overflow: 'hidden', position: 'relative', mb: 3, border: '1px solid #E5E7EB' }}
             >
@@ -722,7 +725,7 @@ export default function AttendanceCheckIn() {
                     disabled={checkingOut || !hasCheckedIn || hasCheckedOut || !isWithinRadius || !!geoError || loadingInitial}
                     sx={{ py: 1.5, fontWeight: 700 }}
                 >
-                    {checkingOut ? 'جارٍ العمل...' : hasCheckedOut ? 'تم تسجيل الخروج' : 'تسجيل خروج'}
+                    {checkingOut ? 'جارٍ العمل...' : hasCheckedOut ? 'تم تسجيل الانصراف' : 'تسجيل انصراف'}
                 </Button>
             </Box>
 
@@ -762,8 +765,8 @@ export default function AttendanceCheckIn() {
                 </Alert>
             )}
             {hasCheckedOut && isTodayAttendance && (
-                <Alert 
-                    severity="success" 
+                <Alert
+                    severity="success"
                     icon={<CheckCircle fontSize="inherit" />}
                     sx={{ mt: 2 }}
                 >
@@ -777,7 +780,7 @@ export default function AttendanceCheckIn() {
                             </Typography>
                         )}
                         <Typography variant="body2" color="text.secondary">
-                            <strong>وقت الخروج:</strong> {formatTimeDisplay(todayAttendance?.exitTime)}
+                            <strong>وقت الانصراف:</strong> {formatTimeDisplay(todayAttendance?.exitTime)}
                         </Typography>
                     </Box>
                 </Alert>

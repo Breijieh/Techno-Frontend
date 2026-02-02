@@ -200,7 +200,7 @@ export default function EmployeeProfilePage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CalendarToday sx={{ fontSize: '18px', color: '#6B7280' }} />
                   <Typography sx={{ fontSize: '14px', color: '#111827' }}>
-                    {employee.dateOfBirth.toLocaleDateString('en-GB')}
+                    {employee.dateOfBirth ? employee.dateOfBirth.toLocaleDateString('en-GB') : 'غير متوفر'}
                   </Typography>
                 </Box>
               </Box>

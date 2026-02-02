@@ -51,7 +51,7 @@ export default function UserAccountForm({
 
   // Fetch employees for dropdown
   const { data: employeesData } = useApi(
-    () => employeesApi.getAllEmployees({ size: 1000 }),
+    () => employeesApi.getAllEmployees({ size: 1000, status: 'ACTIVE' }),
     { immediate: true }
   );
 

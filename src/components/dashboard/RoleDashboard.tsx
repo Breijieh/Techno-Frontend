@@ -65,7 +65,7 @@ export default function RoleDashboard({ role }: RoleDashboardProps) {
 
   const quickActions = [
     {
-      title: 'تسجيل الدخول/الخروج',
+      title: 'تسجيل الدخول والانصراف',
       description: 'تسجيل حضورك',
       icon: <Schedule />,
       color: '#0c2b7a',

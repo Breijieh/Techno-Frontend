@@ -183,7 +183,7 @@ const BASE_SELF_SERVICE_ITEMS: MenuItem[] = [
     section: 'Self Service',
     hasSubmenu: true,
     submenu: [
-      { label: 'تسجيل الدخول/الخروج', icon: <Schedule /> },
+      { label: 'تسجيل الدخول والانصراف', icon: <Schedule /> },
       { label: 'سجل الحضور', icon: <History /> },
       { label: 'ملفي الشخصي', icon: <AccountCircle /> },
       { label: 'طلب إجازة', icon: <EventNote /> },

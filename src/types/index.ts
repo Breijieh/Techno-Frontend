@@ -59,7 +59,7 @@ export interface Employee {
   fullName: string;
   email: string;
   phone: string;
-  dateOfBirth: Date;
+  dateOfBirth?: Date;
   hireDate: Date;
   terminationDate?: Date;
   departmentCode: number;

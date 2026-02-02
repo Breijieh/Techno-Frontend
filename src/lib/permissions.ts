@@ -440,7 +440,7 @@ export const MENU_LABEL_ROUTE_MAP: Record<string, string> = {
   'مركز المساعدة': '/dashboard/help',
   // Self Service
   'الخدمة الذاتية': '/dashboard',
-  'تسجيل الدخول/الخروج': '/dashboard/self-service/attendance',
+  'تسجيل الدخول والانصراف': '/dashboard/self-service/attendance',
   'سجل الحضور': '/dashboard/self-service/attendance-history',
   'ملفي الشخصي': '/dashboard/self-service/profile',
   'طلب إجازة': '/dashboard/self-service/leave',

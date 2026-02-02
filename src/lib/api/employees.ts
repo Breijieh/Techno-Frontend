@@ -13,6 +13,7 @@ export interface EmployeeRequest {
   passportExpiryDate?: string;
   residencyNo?: string;
   residencyExpiryDate?: string;
+  dateOfBirth?: string;
   hireDate: string;
   terminationDate?: string;
   employmentStatus?: string;
@@ -40,6 +41,7 @@ export interface EmployeeResponse {
   passportExpiryDate?: string;
   residencyNo?: string;
   residencyExpiryDate?: string;
+  dateOfBirth?: string;
   hireDate: string;
   terminationDate?: string;
   employmentStatus: string;
@@ -137,12 +139,14 @@ export const employeesApi = {
     size?: number;
     sortBy?: string;
     sortDirection?: 'asc' | 'desc';
+    status?: string;
   }): Promise<EmployeeListResponse> {
     const queryParams = new URLSearchParams();
     if (params?.page !== undefined) queryParams.append('page', params.page.toString());
     if (params?.size !== undefined) queryParams.append('size', params.size.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
     if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection);
+    if (params?.status) queryParams.append('status', params.status);
 
     const query = queryParams.toString();
     const response = await apiClient.get<EmployeeListResponse>(

@@ -43,7 +43,7 @@ export function mapEmployeeResponseToEmployee(response: EmployeeResponse): Emplo
     fullName: response.employeeName || '',
     email: response.email || '',
     phone: response.mobile || '',
-    dateOfBirth: new Date(), // Not available in backend, use current date as placeholder
+    dateOfBirth: response.dateOfBirth ? new Date(response.dateOfBirth) : undefined,
     hireDate,
     terminationDate,
     departmentCode: response.primaryDeptCode || 0,
@@ -94,6 +94,10 @@ export function mapEmployeeToEmployeeRequest(employee: Partial<Employee>): Emplo
     ? (employee.residenceExpiry instanceof Date ? employee.residenceExpiry.toISOString().split('T')[0] : employee.residenceExpiry)
     : undefined;
 
+  const dateOfBirth = employee.dateOfBirth
+    ? (employee.dateOfBirth instanceof Date ? employee.dateOfBirth.toISOString().split('T')[0] : employee.dateOfBirth)
+    : undefined;
+
   // Convert leaveBalanceDays
   const leaveBalanceDays = employee.vacationBalance || 0;
 
@@ -106,6 +110,7 @@ export function mapEmployeeToEmployeeRequest(employee: Partial<Employee>): Emplo
     passportExpiryDate,
     residencyNo: employee.residenceId || '',
     residencyExpiryDate,
+    dateOfBirth,
     hireDate,
     terminationDate: employee.terminationDate
       ? (employee.terminationDate instanceof Date ? employee.terminationDate.toISOString().split('T')[0] : employee.terminationDate)

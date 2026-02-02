@@ -65,7 +65,7 @@ export default function DepartmentForm({
 
   // Fetch employees for manager dropdown (only if not provided via props)
   const { data: fetchedEmployees } = useApi(
-    () => employeesApi.getAllEmployees({ page: 0, size: 1000, sortBy: 'employeeNo', sortDirection: 'asc' }),
+    () => employeesApi.getAllEmployees({ page: 0, size: 1000, sortBy: 'employeeNo', sortDirection: 'asc', status: 'ACTIVE' }),
     { immediate: open && !propEmployees }
   );
 

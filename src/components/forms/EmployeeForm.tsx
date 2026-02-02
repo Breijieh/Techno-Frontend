@@ -156,7 +156,7 @@ export default function EmployeeForm({
 
       setLoadingManagers(true);
       try {
-        const response = await employeesApi.getAllEmployees({ page: 0, size: 1000 });
+        const response = await employeesApi.getAllEmployees({ page: 0, size: 1000, status: 'ACTIVE' });
         setManagers(response.employees.map(mapEmployeeResponseToEmployee));
       } catch (error) { console.error(error); } finally { setLoadingManagers(false); }
     };
