@@ -304,67 +304,61 @@ export default function EmployeesListPage() {
   const isLoading = loadingEmployees || loadingDepartments;
   const isActionLoading = creatingEmployee || updatingEmployee || deletingEmployee;
 
-  // Table columns definition
+  // Table columns definition (Reversed for Pseudo-RTL)
   const columns = useMemo<MRT_ColumnDef<Employee>[]>(
     () => [
       {
-        accessorKey: 'employeeId',
-        header: 'رقم الموظف',
-        size: 120,
+        accessorKey: 'vacationBalance',
+        header: 'رصيد الإجازات',
+        size: 130,
+        filterVariant: 'range',
+        filterFn: 'betweenInclusive',
+        Cell: ({ cell }) => (
+          <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>
+            {cell.getValue<number>().toFixed(2)} يوم
+          </Typography>
+        ),
       },
       {
-        id: 'departmentCode',
-        header: 'القسم',
-        size: 150,
-        accessorFn: (row) => getDepartmentName(row.departmentCode),
+        accessorKey: 'nationality',
+        header: 'الجنسية',
+        size: 130,
         filterVariant: 'multi-select',
       },
       {
-        accessorKey: 'fullName',
-        header: 'الاسم الكامل',
-        size: 200,
-      },
-      {
-        accessorKey: 'contractType',
-        header: 'نوع العقد',
+        id: 'identityOrResidence',
+        header: 'الهوية / الإقامة',
         size: 140,
-        filterVariant: 'multi-select',
-        Cell: ({ cell }) => {
-          const type = cell.getValue<string>();
-          const colors = {
-            TECHNO: { bg: '#DBEAFE', text: '#1E40AF' },
-            TEMPORARY: { bg: '#FEF3C7', text: '#92400E' },
-            DAILY: { bg: '#FCE7F3', text: '#9F1239' },
-          };
-          const typeLabels: Record<string, string> = {
-            TECHNO: 'تكنو',
-            TEMPORARY: 'مؤقت',
-            DAILY: 'يومي',
-          };
-          const color = colors[type as keyof typeof colors] || colors.TECHNO;
-          return (
-            <Chip
-              label={typeLabels[type] || type}
-              size="small"
-              sx={{
-                backgroundColor: color.bg,
-                color: color.text,
-                fontWeight: 600,
-                fontSize: '11px',
-              }}
-            />
-          );
+        accessorFn: (row: Employee) =>
+          row.nationality === 'المملكة العربية السعودية'
+            ? row.nationalId
+            : (row.residenceId || row.nationalId || ''),
+        Cell: ({ row }) => {
+          const emp = row.original as Employee;
+          const value =
+            emp.nationality === 'المملكة العربية السعودية'
+              ? emp.nationalId
+              : (emp.residenceId || emp.nationalId || '—');
+          return value;
         },
-        meta: {
-          getFilterLabel: (row: Employee) => {
-            const labels: Record<string, string> = {
-              TECHNO: 'تكنو',
-              TEMPORARY: 'مؤقت',
-              DAILY: 'يومي',
-            };
-            return labels[row.contractType] || row.contractType;
-          }
-        }
+      },
+      {
+        accessorKey: 'hireDate',
+        header: 'تاريخ التوظيف',
+        size: 130,
+        filterVariant: 'date-range',
+        Cell: ({ cell }) => {
+          const date = cell.getValue<Date>();
+          return date ? formatDate(date) : 'غير متوفر';
+        },
+      },
+      {
+        accessorKey: 'monthlySalary',
+        header: 'الراتب الشهري',
+        size: 180,
+        filterVariant: 'range',
+        filterFn: 'betweenInclusive',
+        Cell: ({ cell }) => `ر.س ${formatNumber(cell.getValue<number>())}`,
       },
       {
         accessorKey: 'status',
@@ -412,69 +406,75 @@ export default function EmployeesListPage() {
         }
       },
       {
-        accessorKey: 'monthlySalary',
-        header: 'الراتب الشهري',
-        size: 180, // Increased from 150 for better range filter fit
-        filterVariant: 'range',
-        filterFn: 'betweenInclusive',
-        Cell: ({ cell }) => `ر.س ${formatNumber(cell.getValue<number>())}`,
-      },
-      {
-        accessorKey: 'hireDate',
-        header: 'تاريخ التوظيف',
-        size: 130,
-        filterVariant: 'date-range',
-        Cell: ({ cell }) => {
-          const date = cell.getValue<Date>();
-          return date ? formatDate(date) : 'غير متوفر';
-        },
-      },
-      {
-        id: 'identityOrResidence',
-        header: 'الهوية / الإقامة',
+        accessorKey: 'contractType',
+        header: 'نوع العقد',
         size: 140,
-        accessorFn: (row: Employee) =>
-          row.nationality === 'المملكة العربية السعودية'
-            ? row.nationalId
-            : (row.residenceId || row.nationalId || ''),
-        Cell: ({ row }) => {
-          const emp = row.original as Employee;
-          const value =
-            emp.nationality === 'المملكة العربية السعودية'
-              ? emp.nationalId
-              : (emp.residenceId || emp.nationalId || '—');
-          return value;
+        filterVariant: 'multi-select',
+        Cell: ({ cell }) => {
+          const type = cell.getValue<string>();
+          const colors = {
+            TECHNO: { bg: '#DBEAFE', text: '#1E40AF' },
+            TEMPORARY: { bg: '#FEF3C7', text: '#92400E' },
+            DAILY: { bg: '#FCE7F3', text: '#9F1239' },
+          };
+          const typeLabels: Record<string, string> = {
+            TECHNO: 'تكنو',
+            TEMPORARY: 'مؤقت',
+            DAILY: 'يومي',
+          };
+          const color = colors[type as keyof typeof colors] || colors.TECHNO;
+          return (
+            <Chip
+              label={typeLabels[type] || type}
+              size="small"
+              sx={{
+                backgroundColor: color.bg,
+                color: color.text,
+                fontWeight: 600,
+                fontSize: '11px',
+              }}
+            />
+          );
         },
+        meta: {
+          getFilterLabel: (row: Employee) => {
+            const labels: Record<string, string> = {
+              TECHNO: 'تكنو',
+              TEMPORARY: 'مؤقت',
+              DAILY: 'يومي',
+            };
+            return labels[row.contractType] || row.contractType;
+          }
+        }
       },
       {
-        accessorKey: 'nationality',
-        header: 'الجنسية',
-        size: 130,
+        accessorKey: 'fullName',
+        header: 'الاسم الكامل',
+        size: 200,
+      },
+      {
+        id: 'departmentCode',
+        header: 'القسم',
+        size: 150,
+        accessorFn: (row) => getDepartmentName(row.departmentCode),
         filterVariant: 'multi-select',
       },
       {
-        accessorKey: 'vacationBalance',
-        header: 'رصيد الإجازات',
-        size: 130,
-        filterVariant: 'range',
-        filterFn: 'betweenInclusive',
-        Cell: ({ cell }) => (
-          <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>
-            {cell.getValue<number>().toFixed(2)} يوم
-          </Typography>
-        ),
+        accessorKey: 'employeeId',
+        header: 'رقم الموظف',
+        size: 120,
       },
     ],
     [getDepartmentName],
   );
 
   const table = useMaterialReactTable({
+    ...lightTableTheme,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columns: columns as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: filteredEmployees as any,
     enableRowSelection: true,
-    // enableColumnFilters: true, // Removed to use global config (false) and Smart Filters
     enableColumnOrdering: true,
     enableColumnResizing: true,
     enableStickyHeader: true,
@@ -488,8 +488,13 @@ export default function EmployeesListPage() {
       isLoading,
     },
     initialState: {
+      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
+      columnPinning: {
+        left: ['mrt-row-actions'], // Physical left is logical end in Pseudo-RTL
+        right: ['mrt-row-select', 'mrt-row-expand'], // Physical right is logical start in Pseudo-RTL
+      },
     },
     columnResizeMode: 'onChange',
     defaultColumn: {
@@ -499,13 +504,39 @@ export default function EmployeesListPage() {
     },
     localization: mrtArabicLocalization,
     layoutMode: 'grid',
-    ...lightTableTheme,
+    // Pseudo-RTL Mirroring
+    muiTableHeadCellProps: {
+      sx: {
+        ...(lightTableTheme.muiTableHeadCellProps as { sx?: Record<string, unknown> })?.sx,
+        textAlign: 'right',
+        direction: 'rtl',
+      },
+    },
+    muiTableBodyCellProps: {
+      sx: {
+        ...(lightTableTheme.muiTableBodyCellProps as { sx?: Record<string, unknown> })?.sx,
+        textAlign: 'right',
+        direction: 'rtl',
+      },
+    },
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,
         overflowX: 'auto',
         maxWidth: '100%',
         width: '100%',
+      },
+    },
+    muiTopToolbarProps: {
+      sx: {
+        ...(lightTableTheme.muiTopToolbarProps as { sx?: Record<string, unknown> })?.sx,
+        direction: 'rtl',
+      },
+    },
+    muiBottomToolbarProps: {
+      sx: {
+        ...(lightTableTheme.muiBottomToolbarProps as { sx?: Record<string, unknown> })?.sx,
+        direction: 'rtl',
       },
     },
     renderTopToolbarCustomActions: ({ table }) => {
@@ -687,11 +718,17 @@ export default function EmployeesListPage() {
       </Box>
     ),
     enableRowActions: true,
-    positionActionsColumn: 'last',
+    positionActionsColumn: 'first',
     displayColumnDefOptions: {
       'mrt-row-actions': {
         header: 'الإجراءات',
-        size: 200,
+        size: 120, // Shrink to fit content
+        muiTableHeadCellProps: {
+          sx: { textAlign: 'center' },
+        },
+        muiTableBodyCellProps: {
+          sx: { textAlign: 'center' },
+        },
       },
     },
   });
@@ -724,7 +761,9 @@ export default function EmployeesListPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <MaterialReactTable table={table} />
+        <Box dir="ltr" sx={{ direction: 'ltr' }}>
+          <MaterialReactTable table={table} />
+        </Box>
       )}
     </Box>
   );
@@ -788,7 +827,7 @@ export default function EmployeesListPage() {
           <Box
             sx={{
               flex: 1,
-              padding: '24px',
+              padding: 0,
               overflow: 'auto',
               backgroundColor: '#F8F9FC',
             }}

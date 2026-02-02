@@ -483,7 +483,7 @@ export default function AttendanceClosurePage() {
           <Box
             sx={{
               flex: 1,
-              padding: '24px',
+              padding: 0,
               overflow: 'auto',
               backgroundColor: '#F8F9FC',
             }}

@@ -422,7 +422,7 @@ export default function DuePaymentsPage() {
           <Box
             sx={{
               flex: 1,
-              padding: '24px',
+              padding: 0,
               overflow: 'auto',
               backgroundColor: '#F8F9FC',
             }}

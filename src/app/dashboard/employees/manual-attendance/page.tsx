@@ -633,7 +633,7 @@ export default function ManualAttendancePage() {
           <Box
             sx={{
               flex: 1,
-              padding: '24px',
+              padding: 0,
               overflow: 'auto',
               backgroundColor: '#F8F9FC',
             }}
@@ -662,7 +662,7 @@ export default function ManualAttendancePage() {
           <Box
             sx={{
               flex: 1,
-              padding: '24px',
+              padding: 0,
               animation: 'fadeInUp 0.6s ease-out 0.2s both',
               '@keyframes fadeInUp': {
                 from: { opacity: 0, transform: 'translateY(20px)' },

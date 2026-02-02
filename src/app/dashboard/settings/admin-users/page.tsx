@@ -578,7 +578,7 @@ export default function AdminRolesPage() {
                             </IconButton>
                         </Tooltip>
                     </Box>
-                    <Box sx={{ flex: 1, padding: '24px', overflow: 'auto', backgroundColor: '#F8F9FC' }}>
+                    <Box sx={{ flex: 1, padding: 0, overflow: 'auto', backgroundColor: '#F8F9FC' }}>
                         {tableWrapper}
                     </Box>
                 </Box>

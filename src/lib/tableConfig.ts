@@ -32,15 +32,16 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   enableColumnDragging: true, // Enable Drag & Drop
   enableGrouping: true, // Enable Grouping
   enableColumnFilters: true, // Enable column filters
+  columnFilterDisplayMode: 'popover', // Use popover filters instead of a row
   enableFacetedValues: true, // Auto min/max for range, auto options for select
   enableColumnActions: false, // Remove the three dots menu to reduce clutter
   enableColumnFilterModes: false, // Disable filter mode switching icons
   enableColumnPinning: true, // Enable pinning globally
   enableStickyHeader: true, // Keep headers visible
   initialState: {
-    showColumnFilters: true,
+    showColumnFilters: false,
     columnPinning: { right: ['mrt-row-actions'] }
-  }, // Show built-in column filters and pin actions to the right
+  }, // Hide built-in column filters row and pin actions to the right
   // Global custom filter functions - override MRT defaults for safety
   filterFns: {
     // Override MRT's default multi-select filter to handle edge cases
@@ -219,6 +220,45 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   muiTableHeadCellProps: {
     align: 'center',
     sx: {
+      justifyContent: 'center !important', // Center content horizontally
+      textAlign: 'center !important', // Fallback for text
+      // Force all child divs/spans to be centered
+      '& *': {
+        textAlign: 'center !important',
+      },
+      // NEW: Layout optimization - Icons Left, Text Space Maximized
+      '& .Mui-TableHeadCell-Content': {
+        flexDirection: 'row-reverse !important', // Move icons to the left
+        justifyContent: 'space-between !important',
+        width: '100% !important',
+        alignItems: 'center !important',
+      },
+      '& .Mui-TableHeadCell-Content-Labels': {
+        flex: '1 !important', // Give maximum space to text
+        justifyContent: 'center !important', // Keep text centered
+        paddingLeft: '4px', // Add some spacing from icons
+        paddingRight: '4px',
+      },
+      // Ensure title has minimum width to prevent squashing
+      '& .Mui-TableHeadCell-Content-Wrapper': {
+        minWidth: '8ch !important',
+      },
+      '& .Mui-TableHeadCell-Content-Actions': {
+        flex: '0 0 auto !important', // Compress icons
+        width: 'auto !important',
+        // Make icons smaller and tighter
+        '& .MuiIconButton-root': {
+          padding: '2px !important',
+          width: '24px !important',
+          height: '24px !important',
+          marginLeft: '-2px !important',
+        },
+        '& .MuiSvgIcon-root': {
+          fontSize: '1.0rem !important',
+        }
+      },
+      // End NEW configuration
+
       padding: '8px',
       backgroundColor: '#F9FAFB',
       fontWeight: 600,
@@ -226,13 +266,16 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       color: '#374151',
       borderBottom: '1px solid #E5E7EB',
       borderLeft: '1px solid #E5E7EB', // Cell separator
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
       '&:last-child': {
         borderLeft: 'none',
       },
       // Hide sort icons
       '& .MuiTableSortLabel-root': {
         color: '#374151',
-        pointerEvents: 'none',
+        // pointerEvents: 'none', // Removed to allow interaction with icons if they are now primary indicators
         '&:hover': {
           color: '#374151',
         },
@@ -240,12 +283,9 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
           display: 'none !important',
         },
       },
-      // HIDE THE FILTER MODE ICON (The '=' icon)
-      '& .MuiIconButton-root': {
-        display: 'none !important',
-      },
       // Target range filter containers to stack inputs vertically
       '& .MuiBox-root': {
+        justifyContent: 'center', // Ensure nested flex containers are grounded
         '&:has(> .MuiTextField-root)': {
           flexDirection: 'column !important',
           gap: '4px !important',
@@ -302,6 +342,8 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   muiTableBodyCellProps: {
     align: 'center',
     sx: {
+      textAlign: 'center !important', // Force text align
+      justifyContent: 'center !important', // Force flex center
       fontSize: '13px',
       color: '#111827',
       borderBottom: '1px solid #F3F4F6',
@@ -310,6 +352,16 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       '&:last-child': {
         borderLeft: 'none',
       },
+      // Ensure content within is also centered if it's a flex container
+      '& .MuiBox-root': {
+        justifyContent: 'center !important',
+        textAlign: 'center !important',
+        width: '100%',
+      },
+      // Force all child divs/spans to be centered
+      '& *': {
+        textAlign: 'center !important',
+      }
     },
   },
   muiTableBodyRowProps: {

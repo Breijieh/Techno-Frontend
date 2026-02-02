@@ -892,7 +892,7 @@ export default function PaymentSchedulesPage() {
           <Box
             sx={{
               flex: 1,
-              padding: '24px',
+              padding: 0,
               overflow: 'auto',
               backgroundColor: '#F8F9FC',
             }}
@@ -1065,7 +1065,7 @@ export default function PaymentSchedulesPage() {
             sx={{
               backgroundColor: '#FFFFFF',
               borderRadius: '12px',
-              padding: '24px',
+              padding: 0,
               maxWidth: '400px',
               width: '90%',
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
