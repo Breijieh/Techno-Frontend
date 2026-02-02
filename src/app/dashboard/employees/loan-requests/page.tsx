@@ -50,7 +50,6 @@ import { loansApi, type LoanDetailsResponse } from '@/lib/api/loans';
 import { mapLoanDetailsResponseListToLoanRequestList, mapInstallmentDetailsResponseListToLoanInstallmentList } from '@/lib/mappers/loanMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
-import { RangeSliderFilter } from '@/components/tables/RangeSliderFilter';
 
 export default function LoanRequestsPage() {
   const router = useRouter();
@@ -291,7 +290,7 @@ export default function LoanRequestsPage() {
         header: 'مبلغ القرض',
         size: 140,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Typography sx={{ fontWeight: 600, color: '#0c2b7a' }}>
             ر.س {cell.getValue<number>().toLocaleString('ar-SA')}
@@ -303,7 +302,7 @@ export default function LoanRequestsPage() {
         header: 'الأقساط',
         size: 120,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => `${cell.getValue<number>()} أشهر`,
       },
       {
@@ -318,7 +317,7 @@ export default function LoanRequestsPage() {
         header: 'المتبقي',
         size: 140,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => {
           const remaining = cell.getValue<number>();
           return (

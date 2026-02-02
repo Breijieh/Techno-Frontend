@@ -158,7 +158,7 @@ export default function LaborAssignmentsPage() {
   const handleAdd = () => {
     setSelectedAssignment(null);
     setIsAddModalOpen(true);
-    fetchEmployees().catch(() => {}); // Refetch so new employees appear in dropdown
+    fetchEmployees().catch(() => { }); // Refetch so new employees appear in dropdown
   };
 
   const handleView = (assignment: LaborAssignment) => {
@@ -169,7 +169,7 @@ export default function LaborAssignmentsPage() {
   const handleEdit = (assignment: LaborAssignment) => {
     setSelectedAssignment(assignment);
     setIsAddModalOpen(true);
-    fetchEmployees().catch(() => {}); // Refetch so new employees appear
+    fetchEmployees().catch(() => { }); // Refetch so new employees appear
   };
 
   const handleDelete = (assignment: LaborAssignment) => {
@@ -362,31 +362,21 @@ export default function LaborAssignmentsPage() {
         },
       },
       {
-        accessorKey: 'employeeId',
+        id: 'employeeId',
         header: 'العامل',
         size: 180,
+        accessorFn: (row) => getEmployeeName(row.employeeId, row.employeeName),
         filterVariant: 'multi-select',
-        meta: {
-          getFilterLabel: (row: LaborAssignment) => getEmployeeName(row.employeeId, row.employeeName)
-        },
-        Cell: ({ cell, row }) => getEmployeeName(cell.getValue<number>(), row.original.employeeName),
       },
       {
-        accessorKey: 'projectCode',
+        id: 'projectCode',
         header: 'المشروع',
         size: 180,
+        accessorFn: (row) => {
+          const project = (projects || []).find(p => p.projectCode === row.projectCode);
+          return project ? project.projectName : `مشروع #${row.projectCode}`;
+        },
         filterVariant: 'multi-select',
-        meta: {
-          getFilterLabel: (row: LaborAssignment) => {
-            const project = (projects || []).find(p => p.projectCode === row.projectCode);
-            return project ? project.projectName : `مشروع #${row.projectCode}`;
-          }
-        },
-        Cell: ({ cell }) => {
-          const projectCode = cell.getValue<number>();
-          const project = (projects || []).find(p => p.projectCode === projectCode);
-          return project ? project.projectName : `مشروع #${projectCode}`;
-        },
       },
       {
         accessorKey: 'specialization',
@@ -408,7 +398,7 @@ export default function LaborAssignmentsPage() {
       {
         accessorKey: 'dailyRate',
         header: 'المعدل اليومي',
-        size: 130,
+        size: 160,
         filterVariant: 'range',
         Cell: ({ cell, row }) => {
           const dailyRate = cell.getValue<number>() || row.original.dailyRate;
@@ -435,21 +425,19 @@ export default function LaborAssignmentsPage() {
         Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
       },
       {
-        accessorKey: 'status',
+        id: 'status',
         header: 'الحالة',
         size: 120,
-        filterVariant: 'multi-select',
-        meta: {
-          getFilterLabel: (row: LaborAssignment) => {
-            const labels: Record<string, string> = {
-              ACTIVE: 'نشط',
-              COMPLETED: 'مكتمل',
-            };
-            return labels[row.status] || row.status;
-          }
+        accessorFn: (row) => {
+          const labels: Record<string, string> = {
+            ACTIVE: 'نشط',
+            COMPLETED: 'مكتمل',
+          };
+          return labels[row.status] || row.status;
         },
-        Cell: ({ cell }) => {
-          const status = cell.getValue<string>();
+        filterVariant: 'multi-select',
+        Cell: ({ row }) => {
+          const status = row.original.status;
           const colors = {
             ACTIVE: { bg: '#D1FAE5', text: '#065F46' },
             COMPLETED: { bg: '#DBEAFE', text: '#1E40AF' },
@@ -493,12 +481,13 @@ export default function LaborAssignmentsPage() {
       maxSize: 500,
       size: 150,
     },
+    ...lightTableTheme,
     initialState: {
+      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
     },
     localization: mrtArabicLocalization,
-    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,

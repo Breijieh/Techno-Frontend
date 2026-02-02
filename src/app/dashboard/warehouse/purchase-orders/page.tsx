@@ -476,13 +476,14 @@ export default function PurchaseOrdersPage() {
       maxSize: 500,
       size: 150,
     },
+    localization: mrtArabicLocalization,
+    ...lightTableTheme,
     initialState: {
+      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
       sorting: [{ id: 'transactionDate', desc: true }],
     },
-    localization: mrtArabicLocalization,
-    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         overflowX: 'auto',

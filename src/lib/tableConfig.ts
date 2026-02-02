@@ -31,9 +31,16 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   enableSorting: true, // Keep functionality
   enableColumnDragging: true, // Enable Drag & Drop
   enableGrouping: true, // Enable Grouping
-  enableColumnFilters: true, // Enable functionality for Smart Filters
-  enableColumnActions: true, // Keep the three dots for column settings
-  initialState: { showColumnFilters: false }, // Hide default filter inputs
+  enableColumnFilters: true, // Enable column filters
+  enableFacetedValues: true, // Auto min/max for range, auto options for select
+  enableColumnActions: false,
+  enableColumnFilterModes: false,
+  enableColumnPinning: true,
+  positionActionsColumn: 'last',
+  initialState: {
+    showColumnFilters: true,
+    columnPinning: { left: ['mrt-row-actions'] }
+  },
   // Global custom filter functions - override MRT defaults for safety
   filterFns: {
     // Override MRT's default multi-select filter to handle edge cases
@@ -49,7 +56,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       border: '1px solid #E5E7EB',
       backgroundColor: '#FFFFFF',
       maxWidth: '100%',
-      overflowX: 'auto',
+      // overflowX: 'auto', // Removed to prevent conflict with sticky positioning in container
       '& .MuiIconButton-root': {
         color: '#374151 !important',
         '&:hover': {
@@ -198,6 +205,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   muiTableHeadCellProps: {
     align: 'center',
     sx: {
+      padding: '8px',
       backgroundColor: '#F9FAFB',
       fontWeight: 600,
       fontSize: '13px',
@@ -207,20 +215,43 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       '&:last-child': {
         borderLeft: 'none',
       },
+      // Hide sort icons
       '& .MuiTableSortLabel-root': {
         color: '#374151',
-        pointerEvents: 'none', // Disable clicking header text for sorting
+        pointerEvents: 'none',
         '&:hover': {
           color: '#374151',
         },
         '& .MuiTableSortLabel-icon': {
-          display: 'none !important', // Completely hide sort icons
+          display: 'none !important',
         },
       },
-      // Ensure column actions are still clickable
+      // HIDE THE FILTER MODE ICON (The '=' icon)
       '& .MuiIconButton-root': {
-        pointerEvents: 'auto',
+        display: 'none !important',
       },
+      // Target range filter containers to stack inputs vertically
+      '& .MuiBox-root': {
+        '&:has(> .MuiTextField-root)': {
+          flexDirection: 'column !important',
+          gap: '4px !important',
+          width: '100% !important',
+          '& .MuiTextField-root': {
+            width: '100% !important',
+            minWidth: '0 !important',
+          }
+        }
+      },
+      // Targets specifically MRT range filter containers if they use classes
+      '& .mrt-filter-range-fields': {
+        flexDirection: 'column !important',
+        gap: '4px !important',
+        width: '100% !important',
+        '& .MuiTextField-root': {
+          width: '100% !important',
+          minWidth: '0 !important',
+        }
+      }
     },
   },
   muiTableHeadRowProps: {
@@ -364,6 +395,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       '& .MuiOutlinedInput-root': {
         backgroundColor: '#FFFFFF',
         color: '#111827',
+        fontSize: '11px',
         '& fieldset': {
           borderColor: '#E5E7EB',
         },
@@ -373,12 +405,19 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
         '&.Mui-focused fieldset': {
           borderColor: '#0c2b7a',
         },
+        '& .MuiInputBase-input': {
+          padding: '4px 8px',
+        },
       },
       '& .MuiInputLabel-root': {
         color: '#6B7280',
+        fontSize: '9px !important',
         '&.Mui-focused': {
           color: '#0c2b7a',
         },
+      },
+      '& input::placeholder': {
+        fontSize: '9px !important',
       },
       '& .MuiInputBase-input': {
         color: '#111827',
@@ -390,6 +429,8 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       '& .MuiOutlinedInput-root': {
         backgroundColor: '#FFFFFF',
         color: '#111827',
+        fontSize: '10px', // Tightened font
+        minWidth: '40px', // Allow extreme shrinking
         '& fieldset': {
           borderColor: '#E5E7EB',
         },
@@ -399,21 +440,48 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
         '&.Mui-focused fieldset': {
           borderColor: '#0c2b7a',
         },
+        '& .MuiInputBase-input': {
+          padding: '4px 6px',
+          height: '1.2em', // Smaller height
+        },
       },
       '& .MuiInputLabel-root': {
         color: '#6B7280',
+        fontSize: '9px !important',
+        top: '-4px',
         '&.Mui-focused': {
           color: '#0c2b7a',
         },
+      },
+      '& input::placeholder': {
+        fontSize: '9px !important',
+      },
+      '& .MuiFormLabel-root': {
+        fontSize: '9px !important',
       },
       '& .MuiInputBase-input': {
         color: '#111827',
       },
       '& .MuiSelect-select': {
         color: '#111827',
+        fontSize: '11px',
+        padding: '4px 24px 4px 6px !important',
       },
     },
   },
+  muiFilterAutocompleteProps: () => ({
+    sx: {
+      '& .MuiOutlinedInput-root': {
+        backgroundColor: '#FFFFFF',
+        color: '#111827',
+        fontSize: '11px',
+        padding: '0 4px !important',
+        '& .MuiInputBase-input': {
+          padding: '4px 6px !important',
+        },
+      },
+    },
+  }) as any,
   muiSelectCheckboxProps: {
     sx: {
       color: '#0c2b7a',
@@ -465,9 +533,17 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       '& .MuiOutlinedInput-root': {
         backgroundColor: '#FFFFFF',
         color: '#111827',
+        fontSize: '11px',
+        '& .MuiInputBase-input': {
+          padding: '4px 6px',
+        },
       },
       '& .MuiInputLabel-root': {
         color: '#6B7280',
+        fontSize: '9px !important',
+      },
+      '& input::placeholder': {
+        fontSize: '9px !important',
       },
     },
   },

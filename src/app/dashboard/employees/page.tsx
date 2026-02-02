@@ -45,7 +45,7 @@ import { exportDataToCSV } from '@/lib/utils/exportUtils';
 import { formatDate } from '@/lib/utils/dateFormatter';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
-import { RangeSliderFilter } from '@/components/tables/RangeSliderFilter';
+
 import { formatNumber } from '@/lib/utils/numberFormatter';
 
 export default function EmployeesListPage() {
@@ -313,14 +313,11 @@ export default function EmployeesListPage() {
         size: 120,
       },
       {
-        accessorKey: 'departmentCode',
+        id: 'departmentCode',
         header: 'القسم',
         size: 150,
+        accessorFn: (row) => getDepartmentName(row.departmentCode),
         filterVariant: 'multi-select',
-        meta: {
-          getFilterLabel: (row: Employee) => getDepartmentName(row.departmentCode),
-        },
-        Cell: ({ cell }) => getDepartmentName(cell.getValue<number>()),
       },
       {
         accessorKey: 'fullName',
@@ -417,9 +414,9 @@ export default function EmployeesListPage() {
       {
         accessorKey: 'monthlySalary',
         header: 'الراتب الشهري',
-        size: 150,
+        size: 180, // Increased from 150 for better range filter fit
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => `ر.س ${formatNumber(cell.getValue<number>())}`,
       },
       {
@@ -460,7 +457,7 @@ export default function EmployeesListPage() {
         header: 'رصيد الإجازات',
         size: 130,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>
             {cell.getValue<number>().toFixed(2)} يوم
@@ -490,7 +487,9 @@ export default function EmployeesListPage() {
       pagination,
       isLoading,
     },
+    ...lightTableTheme,
     initialState: {
+      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
     },
@@ -501,8 +500,6 @@ export default function EmployeesListPage() {
       size: 150,
     },
     localization: mrtArabicLocalization,
-    layoutMode: 'grid',
-    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,

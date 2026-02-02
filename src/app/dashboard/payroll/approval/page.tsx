@@ -44,7 +44,6 @@ import { getUserContext } from '@/lib/dataFilters';
 import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
 import { useToast } from '@/contexts/ToastContext';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
-import { RangeSliderFilter } from '@/components/tables/RangeSliderFilter';
 import { formatNumber } from '@/lib/utils/numberFormatter';
 
 export default function PayrollApprovalPage() {
@@ -255,23 +254,11 @@ export default function PayrollApprovalPage() {
         size: 110,
       },
       {
-        accessorKey: 'employeeNo',
+        id: 'employeeNo',
         header: 'الموظف',
         size: 200,
+        accessorFn: (row) => getEmployeeName(row.employeeNo),
         filterVariant: 'multi-select',
-        filterFn: (row, id, filterValue) => {
-          // Handle all filter value types
-          if (filterValue === undefined || filterValue === null) return true;
-          const rowValue = row.getValue(id);
-          if (Array.isArray(filterValue)) {
-            return filterValue.length === 0 || filterValue.includes(rowValue);
-          }
-          return rowValue === filterValue;
-        },
-        meta: {
-          getFilterLabel: (row: SalaryHeader) => getEmployeeName(row.employeeNo)
-        },
-        Cell: ({ cell }) => getEmployeeName(cell.getValue<number>()),
       },
       {
         accessorKey: 'salaryMonth',
@@ -283,7 +270,7 @@ export default function PayrollApprovalPage() {
         header: 'الراتب الأساسي',
         size: 130,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', fontWeight: 600 }}>
             {formatNumber(cell.getValue<number>())}
@@ -295,7 +282,7 @@ export default function PayrollApprovalPage() {
         header: 'البدلات',
         size: 120,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', color: '#059669' }}>
             +{formatNumber(cell.getValue<number>())}
@@ -307,7 +294,7 @@ export default function PayrollApprovalPage() {
         header: 'الخصومات',
         size: 120,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', color: '#DC2626' }}>
             -{formatNumber(cell.getValue<number>())}
@@ -319,7 +306,7 @@ export default function PayrollApprovalPage() {
         header: 'الراتب الصافي',
         size: 140,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', fontWeight: 700, color: '#0c2b7a' }}>
             ر.س {formatNumber(cell.getValue<number>())}
@@ -350,31 +337,20 @@ export default function PayrollApprovalPage() {
         },
       },
       {
-        accessorKey: 'transStatus',
+        id: 'transStatus',
         header: 'الحالة',
         size: 120,
+        accessorFn: (row) => {
+          const labels: Record<string, string> = {
+            A: 'موافق عليه',
+            N: 'قيد الانتظار',
+            R: 'مرفوض',
+          };
+          return labels[row.transStatus] || row.transStatus;
+        },
         filterVariant: 'multi-select',
-        filterFn: (row, id, filterValue) => {
-          // Handle all filter value types
-          if (filterValue === undefined || filterValue === null) return true;
-          const rowValue = row.getValue(id);
-          if (Array.isArray(filterValue)) {
-            return filterValue.length === 0 || filterValue.includes(rowValue);
-          }
-          return rowValue === filterValue;
-        },
-        meta: {
-          getFilterLabel: (row: SalaryHeader) => {
-            const labels: Record<string, string> = {
-              A: 'موافق عليه',
-              N: 'قيد الانتظار',
-              R: 'مرفوض',
-            };
-            return labels[row.transStatus] || row.transStatus;
-          }
-        },
-        Cell: ({ cell }) => {
-          const status = cell.getValue<string>();
+        Cell: ({ row }) => {
+          const status = row.original.transStatus;
           return (
             <Chip
               label={status === 'A' ? 'موافق عليه' : status === 'N' ? 'قيد الانتظار' : 'مرفوض'}
@@ -443,12 +419,13 @@ export default function PayrollApprovalPage() {
       maxSize: 500,
       size: 150,
     },
+    ...lightTableTheme,
     initialState: {
+      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
     },
     localization: mrtArabicLocalization,
-    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,

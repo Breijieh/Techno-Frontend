@@ -159,7 +159,7 @@ export default function ProjectsListPage() {
         accessorKey: 'projectCode',
         header: 'الرمز',
         size: 90,
-        filterVariant: 'multi-select',
+        filterVariant: 'text',
         Cell: ({ cell }) => `#${cell.getValue<number>()}`,
       },
       {
@@ -212,21 +212,17 @@ export default function ProjectsListPage() {
         },
       },
       {
-        accessorKey: 'projectManagerId',
+        id: 'projectManagerId',
         header: 'مدير المشروع',
         size: 180,
+        accessorFn: (row) => (row as any).projectManagerName || '',
         filterVariant: 'multi-select',
-        meta: {
-          getFilterLabel: (row: Project) => (row as any).projectManagerName || getManagerName(row.projectManagerId)
-        },
-        Cell: ({ cell }) => {
-          const managerId = cell.getValue<number>();
-          // Try to use projectManagerName from summary if available
-          const project = cell.row.original as Project & { projectManagerName?: string };
+        Cell: ({ row }) => {
+          const project = row.original as Project & { projectManagerName?: string };
           if (project.projectManagerName) {
             return project.projectManagerName;
           }
-          return getManagerName(managerId);
+          return getManagerName(project.projectManagerId);
         },
       },
       {
@@ -441,12 +437,13 @@ export default function ProjectsListPage() {
       maxSize: 500,
       size: 150,
     },
+    ...lightTableTheme,
     initialState: {
+      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
     },
     localization: mrtArabicLocalization,
-    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,

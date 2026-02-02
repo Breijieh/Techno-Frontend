@@ -43,7 +43,6 @@ import { mapLeaveDetailsResponseListToLeaveRequestList } from '@/lib/mappers/lea
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { formatDate } from '@/lib/utils/dateFormatter';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
-import { RangeSliderFilter } from '@/components/tables/RangeSliderFilter';
 
 export default function LeaveRequestsPage() {
   const router = useRouter();
@@ -361,7 +360,7 @@ export default function LeaveRequestsPage() {
         header: 'الأيام',
         size: 90,
         filterVariant: 'range',
-        Filter: ({ column, table }) => <RangeSliderFilter column={column} table={table} />,
+        filterFn: 'betweenInclusive',
         Cell: ({ cell }) => (
           <Chip
             label={`${cell.getValue<number>()} يوم`}
