@@ -500,10 +500,16 @@ export function AnimatedAutocomplete<T = unknown>({
     <Autocomplete
       value={value}
       onChange={(_, newValue) => onChange(newValue as T | T[] | null)}
+      onInputChange={(_, newInputValue, reason) => {
+        if (!multiple && reason === 'input' && newInputValue === '') {
+          onChange(null);
+        }
+      }}
+      autoHighlight
       options={options}
       getOptionLabel={getOptionLabel}
       renderOption={(props, option, state) => {
-        const { key: _omit, ...rest } = props as { key?: string; [k: string]: unknown };
+        const { key: _omit, ...rest } = props as { key?: string;[k: string]: unknown };
         return (
           <li {...rest} key={getKey(option, state.index)}>
             {getOptionLabel(option)}

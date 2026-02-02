@@ -103,7 +103,7 @@ export default function ProjectForm({
           projectProfitMargin: initialData.projectProfitMargin,
           projectLongitude: initialData.projectLongitude,
           projectLatitude: initialData.projectLatitude,
-          attendanceRadius: initialData.attendanceRadius,
+          attendanceRadius: initialData.attendanceRadius || (initialData.projectLatitude ? 100 : undefined),
           numberOfPayments: initialData.numberOfPayments,
           firstDownPaymentDate: initialData.firstDownPaymentDate ? new Date(initialData.firstDownPaymentDate) : undefined,
           projectManagerId: initialData.projectManagerId,
@@ -444,7 +444,12 @@ export default function ProjectForm({
               latitude={formData.projectLatitude}
               longitude={formData.projectLongitude}
               radius={formData.attendanceRadius}
-              onChange={(lat, lng) => setFormData(prev => ({ ...prev, projectLatitude: lat, projectLongitude: lng }))}
+              onChange={(lat, lng) => setFormData(prev => ({
+                ...prev,
+                projectLatitude: lat,
+                projectLongitude: lng,
+                attendanceRadius: prev.attendanceRadius || 100
+              }))}
               onRadiusChange={(radius) => setFormData(prev => ({ ...prev, attendanceRadius: radius }))}
               error={errors.projectLatitude || errors.projectLongitude || errors.attendanceRadius}
             />

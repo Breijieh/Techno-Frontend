@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Box,
@@ -26,14 +26,18 @@ import { getUserRole } from '@/lib/permissions';
 import { filterEmployeesByRole, getUserContext } from '@/lib/dataFilters';
 import useRouteProtection from '@/hooks/useRouteProtection';
 import { exportDataToCSV } from '@/lib/utils/exportUtils';
-import { employeesApi } from '@/lib/api/employees';
+import { employeesApi, departmentsApi, projectsApi } from '@/lib/api';
 import { attendanceApi } from '@/lib/api/attendance';
 import { useApi } from '@/hooks/useApi';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
 import { useToast } from '@/contexts/ToastContext';
 
+import type { DepartmentResponse, EmployeeListResponse } from '@/lib/api';
+import type { ProjectSummary } from '@/lib/api/projects';
+import type { Employee } from '@/types';
 import { formatDate } from '@/lib/utils/dateFormatter';
+import { AnimatedAutocomplete } from '@/components/common/FormFields';
 
 export default function TimesheetsPage() {
   const router = useRouter();
@@ -45,14 +49,17 @@ export default function TimesheetsPage() {
   useRouteProtection(['Admin', 'HR Manager', 'General Manager', 'Finance Manager', 'Project Manager', 'Employee']);
 
   // Fetch employees
-  const { data: employeesResponse, loading: loadingEmployees } = useApi(
-    () => employeesApi.getAllEmployees(),
+  // Fetch employees
+  const { data: employeesResponse, loading: loadingEmployees, error: employeesError } = useApi(
+    useCallback(() => employeesApi.getAllEmployees({ size: 1000 }), []),
     { immediate: true }
   );
 
   const employees = useMemo(() => {
-    if (!employeesResponse?.content) return [];
-    return employeesResponse.content.map(mapEmployeeResponseToEmployee);
+    if (!employeesResponse) return [];
+    // Handle both content and employees properties (backend consistency issue)
+    const list = employeesResponse.employees || employeesResponse.content || [];
+    return list.map(mapEmployeeResponseToEmployee);
   }, [employeesResponse]);
 
   // Filter employees based on role
@@ -65,6 +72,42 @@ export default function TimesheetsPage() {
       userContext.departmentCode
     );
   }, [employees, userRole, userContext]);
+
+  // Fetch departments and projects
+  const [departments, setDepartments] = useState<DepartmentResponse[]>([]);
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<number | null>(null);
+  const [selectedProject, setSelectedProject] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (userRole !== 'Employee') {
+      const loadFilters = async () => {
+        try {
+          const [depts, projs] = await Promise.all([
+            departmentsApi.getAllDepartments(),
+            projectsApi.getActiveProjects()
+          ]);
+          setDepartments(depts || []);
+          setProjects(projs || []);
+        } catch (error) {
+          console.error('Error loading filters:', error);
+        }
+      };
+      loadFilters();
+    }
+  }, [userRole]);
+
+  // Filter accessible employees by selected department/project
+  const filteredEmployees = useMemo(() => {
+    let result = accessibleEmployees;
+    if (selectedDepartment) {
+      result = result.filter(e => e.departmentCode === selectedDepartment);
+    }
+    if (selectedProject) {
+      result = result.filter(e => e.projectCode === selectedProject);
+    }
+    return result;
+  }, [accessibleEmployees, selectedDepartment, selectedProject]);
 
   // Generate month options (6 months back, 6 months forward)
   const monthOptions = useMemo(() => {
@@ -80,12 +123,7 @@ export default function TimesheetsPage() {
   }, []);
 
   // Set default selected employee based on role
-  const [selectedEmployee, setSelectedEmployee] = useState<number>(() => {
-    if (userRole === 'Employee' && userContext.employeeId) {
-      return userContext.employeeId;
-    }
-    return 0; // Will be set when employees load
-  });
+  const [selectedEmployee, setSelectedEmployee] = useState<number>(0);
 
   // Set default month to current month
   const [selectedMonth, setSelectedMonth] = useState(() => {
@@ -105,6 +143,9 @@ export default function TimesheetsPage() {
     { silent: true }
   );
 
+  // Track if we have set the initial default employee
+  const hasSetDefaultEmployee = useRef(false);
+
   useEffect(() => {
     const isLoggedIn = sessionStorage.getItem('isLoggedIn');
     if (!isLoggedIn) {
@@ -113,16 +154,14 @@ export default function TimesheetsPage() {
     }
 
     // For employees, ensure they can only see their own timesheet
-    if (userRole === 'Employee' && userContext.employeeId && selectedEmployee !== userContext.employeeId) {
-      // Use setTimeout to avoid synchronous setState in effect
-      setTimeout(() => {
-        setSelectedEmployee(userContext.employeeId || 0);
-      }, 0);
-    } else if (accessibleEmployees.length > 0 && selectedEmployee === 0) {
-      // Set first accessible employee as default
-      setTimeout(() => {
-        setSelectedEmployee(accessibleEmployees[0].employeeId);
-      }, 0);
+    if (userRole === 'Employee' && userContext.employeeId) {
+      if (selectedEmployee !== userContext.employeeId) {
+        setSelectedEmployee(userContext.employeeId);
+      }
+    } else if (accessibleEmployees.length > 0 && selectedEmployee === 0 && !hasSetDefaultEmployee.current) {
+      // Set first accessible employee as default ONLY ONCE
+      setSelectedEmployee(accessibleEmployees[0].employeeId);
+      hasSetDefaultEmployee.current = true;
     }
   }, [router, userRole, userContext.employeeId, accessibleEmployees, selectedEmployee]);
 
@@ -228,43 +267,54 @@ export default function TimesheetsPage() {
           }}
         >
           {/* Selection Controls */}
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
             {userRole !== 'Employee' && (
-              <TextField
-                select
-                value={selectedEmployee}
-                onChange={(e) => setSelectedEmployee(Number(e.target.value))}
-                SelectProps={{ displayEmpty: true }}
-                sx={{
-                  minWidth: 250,
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: '#FFFFFF',
-                    '& fieldset': {
-                      borderColor: '#E5E7EB',
-                    },
-                    '&:hover fieldset': {
-                      borderColor: '#0c2b7a',
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: '#0c2b7a',
-                      borderWidth: '2px',
-                    },
-                  },
-                  '& .MuiSelect-select': {
-                    color: selectedEmployee ? '#111827' : '#9CA3AF',
-                  },
-                }}
-                size="small"
-              >
-                <MenuItem value="">
-                  <em>الموظف</em>
-                </MenuItem>
-                {accessibleEmployees.map((emp) => (
-                  <MenuItem key={emp.employeeId} value={emp.employeeId}>
-                    {emp.fullName}
-                  </MenuItem>
-                ))}
-              </TextField>
+              <>
+                <Box sx={{ minWidth: 200, flex: 1 }}>
+                  <AnimatedAutocomplete
+                    label="القسم"
+                    value={departments.find(d => d.deptCode === selectedDepartment) || null}
+                    onChange={(newValue) => {
+                      const dept = newValue as DepartmentResponse | null;
+                      setSelectedDepartment(dept ? dept.deptCode : null);
+                      setSelectedEmployee(0); // Reset employee when filter changes
+                    }}
+                    options={departments}
+                    getOptionLabel={(option) => (option as DepartmentResponse).deptName || ''}
+                    getOptionKey={(option) => (option as DepartmentResponse).deptCode}
+                    disabled={loadingEmployees} // Reusing loading state essentially
+                  />
+                </Box>
+                <Box sx={{ minWidth: 200, flex: 1 }}>
+                  <AnimatedAutocomplete
+                    label="المشروع"
+                    value={projects.find(p => p.projectCode === selectedProject) || null}
+                    onChange={(newValue) => {
+                      const proj = newValue as ProjectSummary | null;
+                      setSelectedProject(proj ? proj.projectCode : null);
+                      setSelectedEmployee(0); // Reset employee when filter changes
+                    }}
+                    options={projects}
+                    getOptionLabel={(option) => (option as ProjectSummary).projectName || ''}
+                    getOptionKey={(option) => (option as ProjectSummary).projectCode}
+                    disabled={loadingEmployees}
+                  />
+                </Box>
+                <Box sx={{ minWidth: 250, flex: 1.5 }}>
+                  <AnimatedAutocomplete
+                    label="الموظف"
+                    value={employees.find(e => e.employeeId === selectedEmployee) || null}
+                    onChange={(newValue) => {
+                      const emp = newValue as Employee | null;
+                      setSelectedEmployee(emp ? emp.employeeId : 0);
+                    }}
+                    options={filteredEmployees}
+                    getOptionLabel={(option) => (option as Employee).fullName || ''}
+                    getOptionKey={(option) => (option as Employee).employeeId}
+                    disabled={loadingEmployees}
+                  />
+                </Box>
+              </>
             )}
             <TextField
               select
@@ -330,9 +380,9 @@ export default function TimesheetsPage() {
           )}
 
           {/* Error State */}
-          {timesheetError && (
+          {(timesheetError || employeesError) && (
             <Alert severity="error" sx={{ mb: 3 }}>
-              فشل تحميل بيانات جدول الوقت. يرجى المحاولة مرة أخرى.
+              {timesheetError ? 'فشل تحميل بيانات جدول الوقت.' : `فشل تحميل قائمة الموظفين: ${employeesError}`}
             </Alert>
           )}
 

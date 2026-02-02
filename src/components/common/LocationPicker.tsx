@@ -91,14 +91,16 @@ export default function LocationPicker({
     const defaultCenter: [number, number] = [24.7136, 46.6753];
 
     const [position, setPosition] = useState<L.LatLng | null>(
-        latitude && longitude ? new L.LatLng(latitude, longitude) : null
+        latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null
+            ? new L.LatLng(latitude, longitude)
+            : null
     );
 
     const [searchText, setSearchText] = useState('');
 
     // Update internal state when props change
     useEffect(() => {
-        if (latitude && longitude) {
+        if (latitude !== undefined && longitude !== undefined && latitude !== null && longitude !== null) {
             setPosition(new L.LatLng(latitude, longitude));
         }
     }, [latitude, longitude]);
