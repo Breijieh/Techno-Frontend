@@ -437,13 +437,12 @@ export default function ProjectsListPage() {
       maxSize: 500,
       size: 150,
     },
-    ...lightTableTheme,
     initialState: {
-      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
     },
     localization: mrtArabicLocalization,
+    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,
@@ -655,39 +654,11 @@ export default function ProjectsListPage() {
         '& .MuiPaper-root': {
           width: '100%',
           height: isFullscreen ? '100%' : 'auto',
-          overflowX: 'auto',
-          '&::-webkit-scrollbar': {
-            height: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: '#F3F4F6',
-            borderRadius: '4px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#9CA3AF',
-            borderRadius: '4px',
-            '&:hover': {
-              backgroundColor: '#6B7280',
-            },
-          },
+          // overflowX: 'auto', // Removed for pinning to work correctly
         },
         '& .MuiTableContainer-root': {
           overflowX: 'auto !important',
           ...(isFullscreen && { maxHeight: 'calc(100vh - 120px)' }),
-          '&::-webkit-scrollbar': {
-            height: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: '#F3F4F6',
-            borderRadius: '4px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#9CA3AF',
-            borderRadius: '4px',
-            '&:hover': {
-              backgroundColor: '#6B7280',
-            },
-          },
         },
       }}
     >

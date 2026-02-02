@@ -419,13 +419,12 @@ export default function PayrollApprovalPage() {
       maxSize: 500,
       size: 150,
     },
-    ...lightTableTheme,
     initialState: {
-      ...lightTableTheme.initialState,
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
     },
     localization: mrtArabicLocalization,
+    ...lightTableTheme,
     muiTableContainerProps: {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,

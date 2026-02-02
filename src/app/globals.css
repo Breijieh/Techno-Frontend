@@ -105,8 +105,8 @@ input:-webkit-autofill-selected {
   color: #111827 !important;
 }
 
-.MuiMenu-root .MuiMenuItem-root .MuiBox-root > div,
-.MuiPopover-root .MuiMenuItem-root .MuiBox-root > div {
+.MuiMenu-root .MuiMenuItem-root .MuiBox-root>div,
+.MuiPopover-root .MuiMenuItem-root .MuiBox-root>div {
   color: #111827 !important;
 }
 

@@ -33,14 +33,14 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   enableGrouping: true, // Enable Grouping
   enableColumnFilters: true, // Enable column filters
   enableFacetedValues: true, // Auto min/max for range, auto options for select
-  enableColumnActions: false,
-  enableColumnFilterModes: false,
-  enableColumnPinning: true,
-  positionActionsColumn: 'last',
+  enableColumnActions: false, // Remove the three dots menu to reduce clutter
+  enableColumnFilterModes: false, // Disable filter mode switching icons
+  enableColumnPinning: true, // Enable pinning globally
+  enableStickyHeader: true, // Keep headers visible
   initialState: {
     showColumnFilters: true,
-    columnPinning: { left: ['mrt-row-actions'] }
-  },
+    columnPinning: { right: ['mrt-row-actions'] }
+  }, // Show built-in column filters and pin actions to the right
   // Global custom filter functions - override MRT defaults for safety
   filterFns: {
     // Override MRT's default multi-select filter to handle edge cases
@@ -56,7 +56,21 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       border: '1px solid #E5E7EB',
       backgroundColor: '#FFFFFF',
       maxWidth: '100%',
-      // overflowX: 'auto', // Removed to prevent conflict with sticky positioning in container
+      overflowX: 'visible !important', // Force visible so internal TableContainer handles scrolling (for pinning)
+      '&::-webkit-scrollbar': {
+        width: '6px',
+        height: '6px',
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: '#D1D5DB',
+        borderRadius: '10px',
+        '&:hover': {
+          backgroundColor: '#9CA3AF',
+        },
+      },
       '& .MuiIconButton-root': {
         color: '#374151 !important',
         '&:hover': {
@@ -354,7 +368,22 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
   muiTableContainerProps: {
     sx: {
       maxHeight: 'calc(100vh - 350px)',
+      overflow: 'auto', // Explicit scroll container for pinning
       backgroundColor: '#FFFFFF',
+      '&::-webkit-scrollbar': {
+        width: '6px',
+        height: '6px',
+      },
+      '&::-webkit-scrollbar-track': {
+        backgroundColor: 'transparent',
+      },
+      '&::-webkit-scrollbar-thumb': {
+        backgroundColor: '#D1D5DB',
+        borderRadius: '10px',
+        '&:hover': {
+          backgroundColor: '#9CA3AF',
+        },
+      },
       '& .MuiTableSortLabel-root': {
         color: '#374151 !important',
         '&:hover': {
