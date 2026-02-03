@@ -65,15 +65,16 @@ export default function AttendancePage() {
           projectsApi.getAllProjects({ size: 1000 })     // Get all projects for dropdown
         ]);
 
-        setEmployees(empResponse.employees.map(e => ({
+        const employeeList = empResponse.employees ?? [];
+        setEmployees(employeeList.map(e => ({
           id: e.employeeNo,
-          name: e.employeeName || e.employeeName || `موظف ${e.employeeNo}`
+          name: e.employeeName ?? `موظف ${e.employeeNo}`
         })));
 
-        const projectList = projResponse.content || [];
+        const projectList = projResponse.content ?? [];
         setProjects(projectList.map(p => ({
           id: p.projectCode,
-          name: p.projectName || p.projectName || `مشروع ${p.projectCode}`
+          name: p.projectName ?? `مشروع ${p.projectCode}`
         })));
       } catch (error) {
         console.error('Failed to load filter options:', error);
@@ -165,6 +166,11 @@ export default function AttendancePage() {
     },
     { silent: true }
   );
+
+  // Reset to first page when filters change so results make sense
+  useEffect(() => {
+    setPagination((prev) => (prev.pageIndex === 0 ? prev : { ...prev, pageIndex: 0 }));
+  }, [filterDate, selectedEmployee, selectedProject]);
 
   // Fetch attendance when filters or pagination change
   useEffect(() => {
@@ -523,8 +529,11 @@ export default function AttendancePage() {
             <TextField
               select
               size="small"
-              value={selectedEmployee}
-              onChange={(e) => setSelectedEmployee(e.target.value === '' ? '' : Number(e.target.value))}
+              value={selectedEmployee === '' ? '' : String(selectedEmployee)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedEmployee(v === '' ? '' : Number(v));
+              }}
               disabled={loadingFilters}
               SelectProps={{ displayEmpty: true }}
               sx={{
@@ -543,7 +552,7 @@ export default function AttendancePage() {
                   },
                 },
                 '& .MuiSelect-select': {
-                  color: selectedEmployee ? '#111827' : '#9CA3AF',
+                  color: selectedEmployee !== '' ? '#111827' : '#9CA3AF',
                 },
               }}
             >
@@ -551,15 +560,18 @@ export default function AttendancePage() {
                 <em>الموظف</em>
               </MenuItem>
               {employees.map((emp) => (
-                <MenuItem key={emp.id} value={emp.id}>{emp.name}</MenuItem>
+                <MenuItem key={emp.id} value={String(emp.id)}>{emp.name}</MenuItem>
               ))}
             </TextField>
 
             <TextField
               select
               size="small"
-              value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value === '' ? '' : Number(e.target.value))}
+              value={selectedProject === '' ? '' : String(selectedProject)}
+              onChange={(e) => {
+                const v = e.target.value;
+                setSelectedProject(v === '' ? '' : Number(v));
+              }}
               disabled={loadingFilters}
               SelectProps={{ displayEmpty: true }}
               sx={{
@@ -578,7 +590,7 @@ export default function AttendancePage() {
                   },
                 },
                 '& .MuiSelect-select': {
-                  color: selectedProject ? '#111827' : '#9CA3AF',
+                  color: selectedProject !== '' ? '#111827' : '#9CA3AF',
                 },
               }}
             >
@@ -586,7 +598,7 @@ export default function AttendancePage() {
                 <em>المشروع</em>
               </MenuItem>
               {projects.map((proj) => (
-                <MenuItem key={proj.id} value={proj.id}>{proj.name}</MenuItem>
+                <MenuItem key={proj.id} value={String(proj.id)}>{proj.name}</MenuItem>
               ))}
             </TextField>
             <Button

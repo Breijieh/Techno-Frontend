@@ -359,12 +359,27 @@ export function AnimatedDatePicker({
   // Ensure value is never undefined - convert to null for controlled component
   const normalizedValue = value ?? null;
 
+  const handleChange = (val: unknown) => {
+    if (val == null) {
+      onChange(null);
+      return;
+    }
+    if (val instanceof Date) {
+      onChange(val);
+      return;
+    }
+    const d = typeof (val as { toDate?: () => Date }).toDate === 'function'
+      ? (val as { toDate: () => Date }).toDate()
+      : null;
+    onChange(d);
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={arSA}>
       <DatePicker
         label={label}
         value={normalizedValue}
-        onChange={onChange}
+        onChange={handleChange}
         disabled={disabled}
         minDate={minDate}
         maxDate={maxDate}

@@ -441,6 +441,7 @@ export const MENU_LABEL_ROUTE_MAP: Record<string, string> = {
   // Self Service
   'الخدمة الذاتية': '/dashboard',
   'تسجيل الدخول والانصراف': '/dashboard/self-service/attendance',
+  'تسجيل حضور وانصراف': '/dashboard/self-service/attendance',
   'سجل الحضور': '/dashboard/self-service/attendance-history',
   'ملفي الشخصي': '/dashboard/self-service/profile',
   'طلب إجازة': '/dashboard/self-service/leave',
