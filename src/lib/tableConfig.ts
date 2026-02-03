@@ -275,7 +275,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
-      '&:first-child': {
+      '&:first-of-type': {
         borderLeft: 'none',
       },
       // Hide sort icons
@@ -355,7 +355,7 @@ export const lightTableTheme: Partial<MRT_TableOptions<any>> = {
       borderBottom: '1px solid #F3F4F6',
       borderLeft: '1px solid #F3F4F6', // Cell separator
       backgroundColor: '#FFFFFF',
-      '&:first-child': {
+      '&:first-of-type': {
         borderLeft: 'none',
       },
       // Ensure content within is also centered if it's a flex container

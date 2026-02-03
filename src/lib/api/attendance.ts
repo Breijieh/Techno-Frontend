@@ -372,6 +372,10 @@ export interface ManualAttendanceQueryParams {
   transStatus?: string; // N, A, or R
   startDate?: string; // filters by attendanceDate
   endDate?: string; // filters by attendanceDate
+  entryTimeFrom?: string; // HH:mm - filter entry time from
+  entryTimeTo?: string; // HH:mm - filter entry time to
+  exitTimeFrom?: string; // HH:mm - filter exit time from
+  exitTimeTo?: string; // HH:mm - filter exit time to
   page?: number;
   size?: number;
   sortBy?: string;
@@ -412,6 +416,10 @@ export const manualAttendanceRequestApi = {
     if (params?.employeeNo) queryParams.append('employeeNo', params.employeeNo.toString());
     if (params?.startDate) queryParams.append('startDate', params.startDate);
     if (params?.endDate) queryParams.append('endDate', params.endDate);
+    if (params?.entryTimeFrom) queryParams.append('entryTimeFrom', params.entryTimeFrom);
+    if (params?.entryTimeTo) queryParams.append('entryTimeTo', params.entryTimeTo);
+    if (params?.exitTimeFrom) queryParams.append('exitTimeFrom', params.exitTimeFrom);
+    if (params?.exitTimeTo) queryParams.append('exitTimeTo', params.exitTimeTo);
     if (params?.page !== undefined) queryParams.append('page', params.page.toString());
     if (params?.size !== undefined) queryParams.append('size', params.size.toString());
     if (params?.sortBy) queryParams.append('sortBy', params.sortBy);

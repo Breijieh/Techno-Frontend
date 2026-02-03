@@ -60,6 +60,10 @@ export default function ManualAttendancePage() {
   const [selectedEmployee, setSelectedEmployee] = useState<number | ''>('');
   const [employees, setEmployees] = useState<{ id: number; name: string }[]>([]);
   const [loadingFilters, setLoadingFilters] = useState(false);
+  const [entryTimeFrom, setEntryTimeFrom] = useState<string>('');
+  const [entryTimeTo, setEntryTimeTo] = useState<string>('');
+  const [exitTimeFrom, setExitTimeFrom] = useState<string>('');
+  const [exitTimeTo, setExitTimeTo] = useState<string>('');
 
   const userContext = getUserContext();
   const userRole = getUserRole();
@@ -154,6 +158,11 @@ export default function ManualAttendancePage() {
           // (Though they likely shouldn't access this page)
           params.employeeNo = userContext.employeeId || 0;
         }
+        // Hours filter: entry time and exit time from / to
+        if (entryTimeFrom) params.entryTimeFrom = entryTimeFrom;
+        if (entryTimeTo) params.entryTimeTo = entryTimeTo;
+        if (exitTimeFrom) params.exitTimeFrom = exitTimeFrom;
+        if (exitTimeTo) params.exitTimeTo = exitTimeTo;
         // Admins/Managers see ALL by default if no employee selected
 
         const response = await manualAttendanceRequestApi.getAllManualAttendanceRequests(params);
@@ -192,7 +201,7 @@ export default function ManualAttendancePage() {
   useEffect(() => {
     fetchRequests();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.pageIndex, pagination.pageSize, filterStatus, selectedEmployee]);
+  }, [pagination.pageIndex, pagination.pageSize, filterStatus, selectedEmployee, entryTimeFrom, entryTimeTo, exitTimeFrom, exitTimeTo]);
 
   // Process approve/reject request
   const { execute: processRequest, loading: processingRequest } = useApiWithToast(
@@ -275,11 +284,123 @@ export default function ManualAttendancePage() {
         accessorKey: 'entryTime',
         header: 'وقت الدخول',
         size: 120,
+        enableColumnFilter: true,
+        filterVariant: 'text',
+        Filter: ({ column }) => {
+          const meta = column.columnDef.meta as {
+            entryTimeFrom: string;
+            entryTimeTo: string;
+            setEntryTimeFrom: (v: string) => void;
+            setEntryTimeTo: (v: string) => void;
+          } | undefined;
+          if (!meta) return null;
+          const { entryTimeFrom, entryTimeTo, setEntryTimeFrom, setEntryTimeTo } = meta;
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 0.5, minWidth: 200 }}>
+              <TextField
+                size="small"
+                type="time"
+                label="من"
+                value={entryTimeFrom}
+                onChange={(e) => setEntryTimeFrom(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+              <TextField
+                size="small"
+                type="time"
+                label="إلى"
+                value={entryTimeTo}
+                onChange={(e) => setEntryTimeTo(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+            </Box>
+          );
+        },
+        meta: {
+          entryTimeFrom,
+          entryTimeTo,
+          setEntryTimeFrom,
+          setEntryTimeTo,
+        },
       },
       {
         accessorKey: 'exitTime',
         header: 'وقت الخروج',
         size: 120,
+        enableColumnFilter: true,
+        filterVariant: 'text',
+        Filter: ({ column }) => {
+          const meta = column.columnDef.meta as {
+            exitTimeFrom: string;
+            exitTimeTo: string;
+            setExitTimeFrom: (v: string) => void;
+            setExitTimeTo: (v: string) => void;
+          } | undefined;
+          if (!meta) return null;
+          const { exitTimeFrom: from, exitTimeTo: to, setExitTimeFrom: setFrom, setExitTimeTo: setTo } = meta;
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 0.5, minWidth: 200 }}>
+              <TextField
+                size="small"
+                type="time"
+                label="من"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+              <TextField
+                size="small"
+                type="time"
+                label="إلى"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+            </Box>
+          );
+        },
+        meta: {
+          exitTimeFrom,
+          exitTimeTo,
+          setExitTimeFrom,
+          setExitTimeTo,
+        },
       },
       {
         accessorKey: 'reason',
@@ -325,7 +446,7 @@ export default function ManualAttendancePage() {
         Cell: ({ row }) => new Date(row.original.requestedDate).toLocaleString('ar-SA'),
       },
     ],
-    [getEmployeeName]
+    [getEmployeeName, entryTimeFrom, entryTimeTo, exitTimeFrom, exitTimeTo]
   );
 
   const table = useMaterialReactTable({

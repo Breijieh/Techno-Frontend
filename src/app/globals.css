@@ -132,6 +132,12 @@ input:-webkit-autofill-selected {
   color: #374151 !important;
 }
 
+/* Add icon (plus) – always white for visibility on primary/dark buttons */
+[data-testid="AddIcon"],
+.MuiSvgIcon-root[data-testid="AddIcon"] {
+  color: #ffffff !important;
+}
+
 /* Force Material React Table expanded row content to have visible text */
 .MuiTableRow-root[data-expanded="true"] .MuiBox-root,
 .MuiTableRow-root[data-expanded="true"] .MuiTypography-root {

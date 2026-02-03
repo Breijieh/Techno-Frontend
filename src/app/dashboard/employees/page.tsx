@@ -510,8 +510,8 @@ export default function EmployeesListPage() {
       density: 'comfortable',
       pagination: { pageSize: 25, pageIndex: 0 },
       columnPinning: {
-        left: ['mrt-row-actions'], // Physical left is logical end in Pseudo-RTL
-        right: ['mrt-row-expand'], // Physical right is logical start in Pseudo-RTL
+        left: ['mrt-row-actions'], // Physical left = logical end in RTL (actions stay left)
+        right: ['mrt-row-select', 'mrt-row-expand'], // Selection checkboxes on the right for RTL
       },
     },
     columnResizeMode: 'onChange',

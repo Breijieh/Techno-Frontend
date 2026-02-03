@@ -6,6 +6,7 @@ import {
   Box,
   Button,
   IconButton,
+  TextField,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -180,6 +181,62 @@ export default function TimeSchedulesPage() {
         accessorKey: 'entryTime',
         header: 'وقت الدخول',
         size: 100,
+        enableColumnFilter: true,
+        filterVariant: 'text',
+        filterFn: (row, _columnId, filterValue) => {
+          const v = row.getValue<string>('entryTime');
+          if (!v) return false;
+          const f = (filterValue as { from?: string; to?: string }) || {};
+          const from = f.from || '';
+          const to = f.to || '';
+          if (!from && !to) return true;
+          if (from && v < from) return false;
+          if (to && v > to) return false;
+          return true;
+        },
+        Filter: ({ column }) => {
+          const value = (column.getFilterValue() as { from?: string; to?: string }) || {};
+          const from = value.from ?? '';
+          const to = value.to ?? '';
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 0.5, minWidth: 200 }}>
+              <TextField
+                size="small"
+                type="time"
+                label="من"
+                value={from}
+                onChange={(e) => column.setFilterValue({ ...value, from: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+              <TextField
+                size="small"
+                type="time"
+                label="إلى"
+                value={to}
+                onChange={(e) => column.setFilterValue({ ...value, to: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+            </Box>
+          );
+        },
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#059669' }}>
             {cell.getValue<string>()}
@@ -190,6 +247,62 @@ export default function TimeSchedulesPage() {
         accessorKey: 'exitTime',
         header: 'وقت الخروج',
         size: 100,
+        enableColumnFilter: true,
+        filterVariant: 'text',
+        filterFn: (row, _columnId, filterValue) => {
+          const v = row.getValue<string>('exitTime');
+          if (!v) return false;
+          const f = (filterValue as { from?: string; to?: string }) || {};
+          const from = f.from || '';
+          const to = f.to || '';
+          if (!from && !to) return true;
+          if (from && v < from) return false;
+          if (to && v > to) return false;
+          return true;
+        },
+        Filter: ({ column }) => {
+          const value = (column.getFilterValue() as { from?: string; to?: string }) || {};
+          const from = value.from ?? '';
+          const to = value.to ?? '';
+          return (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 0.5, minWidth: 200 }}>
+              <TextField
+                size="small"
+                type="time"
+                label="من"
+                value={from}
+                onChange={(e) => column.setFilterValue({ ...value, from: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+              <TextField
+                size="small"
+                type="time"
+                label="إلى"
+                value={to}
+                onChange={(e) => column.setFilterValue({ ...value, to: e.target.value })}
+                InputLabelProps={{ shrink: true }}
+                inputProps={{ step: 300 }}
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#fff',
+                    '& fieldset': { borderColor: '#E5E7EB' },
+                    '&:hover fieldset': { borderColor: '#0c2b7a' },
+                  },
+                }}
+              />
+            </Box>
+          );
+        },
         Cell: ({ cell }) => (
           <Typography sx={{ fontSize: '13px', fontWeight: 600, color: '#DC2626' }}>
             {cell.getValue<string>()}
@@ -303,7 +416,7 @@ export default function TimeSchedulesPage() {
     columns,
     data: timeSchedules || [],
     enableRowSelection: false,
-    enableColumnFilters: false,
+    enableColumnFilters: true,
     enableColumnResizing: true,
     enableStickyHeader: true,
     enableDensityToggle: true,

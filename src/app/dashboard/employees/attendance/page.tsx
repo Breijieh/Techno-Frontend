@@ -32,13 +32,14 @@ import { employeesApi, projectsApi } from '@/lib/api';
 import { mapAttendanceResponseListToTransactionList } from '@/lib/mappers/attendanceMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { exportDataToCSV } from '@/lib/utils/exportUtils';
+import { getTodayLocalDate, formatLocalDateYYYYMMDD } from '@/lib/utils/dateFormatter';
 import type { AttendanceTransaction } from '@/types';
 import type { AttendanceResponse } from '@/lib/api/attendance';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
 
 export default function AttendancePage() {
   const router = useRouter();
-  const [filterDate, setFilterDate] = useState<string>('month');
+  const [filterDate, setFilterDate] = useState<string>('all');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [attendance, setAttendance] = useState<AttendanceTransaction[]>([]);
   const [attendanceResponses, setAttendanceResponses] = useState<AttendanceResponse[]>([]);
@@ -114,32 +115,29 @@ export default function AttendancePage() {
     setIsFullscreen(!isFullscreen);
   };
 
-  // Calculate date range based on filter selection
-  const getDateRange = useCallback((filter: string): { startDate?: string; endDate?: string } => {
+  // Calculate date range based on filter selection (use local dates so "today" matches user timezone)
+  const getDateRange = useCallback((filter: string): { startDate: string; endDate: string } => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayStr = getTodayLocalDate();
 
     switch (filter) {
-      case 'today': {
-        const dateStr = today.toISOString().split('T')[0];
-        return { startDate: dateStr, endDate: dateStr };
-      }
+      case 'today':
+        return { startDate: todayStr, endDate: todayStr };
       case 'week': {
-        const startOfWeek = new Date(today);
-        const dayOfWeek = startOfWeek.getDay();
-        const diff = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Monday
-        startOfWeek.setDate(diff);
-        const endDate = today.toISOString().split('T')[0];
-        return { startDate: startOfWeek.toISOString().split('T')[0], endDate };
+        // Last 7 days (including today)
+        const start = new Date(today);
+        start.setDate(start.getDate() - 6);
+        return { startDate: formatLocalDateYYYYMMDD(start), endDate: todayStr };
       }
       case 'month': {
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endDate = today.toISOString().split('T')[0];
-        return { startDate: startOfMonth.toISOString().split('T')[0], endDate };
+        // Last 30 days (including today)
+        const start = new Date(today);
+        start.setDate(start.getDate() - 29);
+        return { startDate: formatLocalDateYYYYMMDD(start), endDate: todayStr };
       }
+      case 'all':
       default:
-        // 'all' - no date filter, or use a very wide range
-        return {};
+        return { startDate: '1970-01-01', endDate: '2099-12-31' };
     }
   }, []);
 
@@ -157,10 +155,12 @@ export default function AttendancePage() {
         sortDirection: 'desc',
       });
 
-      const mappedAttendance = mapAttendanceResponseListToTransactionList(response.content);
+      const content = response?.content ?? [];
+      const total = response?.totalElements ?? 0;
+      const mappedAttendance = mapAttendanceResponseListToTransactionList(content);
       setAttendance(mappedAttendance);
-      setAttendanceResponses(response.content);
-      setTotalElements(response.totalElements);
+      setAttendanceResponses(content);
+      setTotalElements(total);
 
       return response;
     },
@@ -499,7 +499,10 @@ export default function AttendancePage() {
               select
               size="small"
               value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value as string;
+                setFilterDate(v);
+              }}
               sx={{
                 width: '180px',
                 '& .MuiOutlinedInput-root': {

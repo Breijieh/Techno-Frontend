@@ -96,11 +96,14 @@ export const TableSearch = <TData extends Record<string, any>>({
                     }}
                 />
             )}
-            renderOption={(props, option) => (
-                <li {...props} style={{ fontSize: '13px', padding: '6px 16px' }}>
-                    {option}
-                </li>
-            )}
+            renderOption={(props, option) => {
+                const { key, ...rest } = props;
+                return (
+                    <li key={key} {...rest} style={{ fontSize: '13px', padding: '6px 16px' }}>
+                        {option}
+                    </li>
+                );
+            }}
             noOptionsText="لا توجد نتائج"
         />
     );

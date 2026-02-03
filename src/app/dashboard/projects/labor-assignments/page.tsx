@@ -3,14 +3,14 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
+  Autocomplete,
   Box,
   Button,
   Chip,
   IconButton,
+  TextField,
   Tooltip,
   Typography,
-  TextField,
-  MenuItem,
 } from '@mui/material';
 import {
   Delete,
@@ -70,6 +70,21 @@ export default function LaborAssignmentsPage() {
       .map(mapEmployeeResponseToEmployee)
       .filter(emp => emp.contractType === 'TECHNO');
   }, [employeesResponse]);
+
+  // Searchable project filter options: "All" + projects
+  const projectFilterOptions = useMemo(() => {
+    const allOption = { value: 'all' as const, label: 'جميع المشاريع' };
+    const projectOptions = (projects || []).map((p) => ({
+      value: p.projectCode as number,
+      label: p.projectName || `مشروع #${p.projectCode}`,
+    }));
+    return [allOption, ...projectOptions];
+  }, [projects]);
+
+  const selectedProjectOption = useMemo(
+    () => projectFilterOptions.find((o) => o.value === selectedProject) ?? projectFilterOptions[0],
+    [projectFilterOptions, selectedProject]
+  );
 
   // Fetch specializations (for job title labels when saving)
   const { data: specializations = [] } = useApi(
@@ -512,46 +527,45 @@ export default function LaborAssignmentsPage() {
         ]}
       >
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <TextField
-            select
+          <Autocomplete
             size="small"
-            value={selectedProject}
-            label="تصفية حسب المشروع"
-            onChange={(e) => setSelectedProject(e.target.value === 'all' ? 'all' : Number(e.target.value))}
-            sx={{
-              minWidth: 220,
-              '& .MuiOutlinedInput-root': {
-                backgroundColor: '#FFFFFF',
-                color: '#111827',
-                '& fieldset': {
-                  borderColor: '#E5E7EB',
-                },
-                '&:hover fieldset': {
-                  borderColor: '#0c2b7a',
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: '#0c2b7a',
-                  borderWidth: '2px',
-                },
-              },
-              '& .MuiInputLabel-root': {
-                color: '#6B7280',
-                '&.Mui-focused': {
-                  color: '#0c2b7a',
-                },
-              },
-              '& .MuiSelect-select': {
-                color: '#111827',
-              },
+            value={selectedProjectOption}
+            onChange={(_event, newValue) => {
+              setSelectedProject(newValue?.value ?? 'all');
             }}
-          >
-            <MenuItem value="all">جميع المشاريع</MenuItem>
-            {(projects || []).map((project) => (
-              <MenuItem key={project.projectCode} value={project.projectCode}>
-                {project.projectName}
-              </MenuItem>
-            ))}
-          </TextField>
+            options={projectFilterOptions}
+            getOptionLabel={(option) => option.label}
+            isOptionEqualToValue={(option, value) => option.value === value.value}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="تصفية حسب المشروع"
+                sx={{
+                  minWidth: 220,
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: '#FFFFFF',
+                    color: '#111827',
+                    '& fieldset': {
+                      borderColor: '#E5E7EB',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: '#0c2b7a',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#0c2b7a',
+                      borderWidth: '2px',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: '#6B7280',
+                    '&.Mui-focused': {
+                      color: '#0c2b7a',
+                    },
+                  },
+                }}
+              />
+            )}
+          />
           <Button
             variant="contained"
             startIcon={<PersonAdd />}
