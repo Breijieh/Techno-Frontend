@@ -188,27 +188,35 @@ export default function AttendanceCheckIn() {
                 if (!projectCode) {
                     try {
                         const assignments = await laborApi.getEmployeeAssignments(employee.employeeNo);
+                        console.log('Fetched assignments:', assignments);
+
                         const activeAssignment = assignments.find(
                             (a: any) => {
                                 const status = (a.assignmentStatus || '').toUpperCase();
-                                const isActive = status === 'ACTIVE' || a.isActive === true;
+                                // Check both isActive (frontend type) and active (backend raw)
+                                const isActive = status === 'ACTIVE' || a.isActive === true || a.active === true;
+
                                 if (isActive && a.endDate) {
                                     const endDate = new Date(a.endDate);
-                                    return endDate >= new Date();
+                                    const now = new Date();
+                                    // Reset time part for fair date comparison
+                                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                                    const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+                                    return end >= today;
                                 }
                                 return isActive;
                             }
                         );
+
                         if (activeAssignment) {
                             projectCode = activeAssignment.projectCode;
-                            console.log('Found active labor assignment, using project:', {
-                                projectCode,
-                                assignmentNo: activeAssignment.assignmentNo,
-                                status: activeAssignment.assignmentStatus
-                            });
+                            console.log('Found active labor assignment:', activeAssignment);
+                        } else {
+                            console.warn('No active assignment found in list:', assignments);
                         }
                     } catch (assignErr) {
-                        console.warn('Could not check labor assignments fallback:', assignErr);
+                        console.error('Error fetching labor assignments:', assignErr);
                     }
                 }
 
