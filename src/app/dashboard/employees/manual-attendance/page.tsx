@@ -40,6 +40,7 @@ import { getUserContext } from '@/lib/dataFilters';
 import { getUserRole } from '@/lib/permissions';
 import { employeesApi } from '@/lib/api';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
+import { formatDateShort } from '@/lib/utils/dateFormatter';
 
 export default function ManualAttendancePage() {
   const router = useRouter();
@@ -278,10 +279,7 @@ export default function ManualAttendancePage() {
         header: 'التاريخ',
         size: 120,
         filterVariant: 'date-range',
-        Cell: ({ row }) => {
-          const dateStr = row.original.attendanceDate as unknown as string;
-          return dateStr ? dateStr.split('T')[0].split('-').reverse().join('/') : '';
-        },
+        Cell: ({ row }) => formatDateShort(row.original.attendanceDate),
       },
       {
         accessorKey: 'entryTime',

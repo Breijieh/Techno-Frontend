@@ -503,8 +503,8 @@ export default function AttendanceCheckIn() {
     const { execute: handleCheckIn, loading: checkingIn } = useApiWithToast(
         async () => {
             if (!userLocation || !project || !employeeNo) return;
-            // Send local time (Wall Clock) to backend
-            const checkInTime = formatDate(new Date(), 'yyyy-MM-dd\'T\'HH:mm:ss');
+            // Send absolute UTC time to backend
+            const checkInTime = new Date().toISOString();
             await attendanceApi.checkIn({
                 projectCode: project.projectCode,
                 latitude: userLocation.lat,
@@ -521,8 +521,8 @@ export default function AttendanceCheckIn() {
     const { execute: handleCheckOut, loading: checkingOut } = useApiWithToast(
         async () => {
             if (!userLocation || !employeeNo) return;
-            // Send local time (Wall Clock) to backend
-            const checkOutTime = formatDate(new Date(), 'yyyy-MM-dd\'T\'HH:mm:ss');
+            // Send absolute UTC time to backend
+            const checkOutTime = new Date().toISOString();
             await attendanceApi.checkOut({
                 latitude: userLocation.lat,
                 longitude: userLocation.lng,

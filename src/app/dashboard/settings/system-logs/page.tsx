@@ -27,6 +27,7 @@ import type { SystemLog } from '@/types';
 import useRouteProtection from '@/hooks/useRouteProtection';
 import { systemLogsApi, mapBackendToFrontend } from '@/lib/api/systemLogs';
 import { useApi } from '@/hooks/useApi';
+import { formatDateTime } from '@/lib/utils/dateFormatter';
 
 export default function SystemLogsPage() {
   const router = useRouter();
@@ -100,7 +101,7 @@ export default function SystemLogsPage() {
         accessorKey: 'timestamp',
         header: 'الوقت',
         size: 180,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleString('en-GB'),
+        Cell: ({ cell }) => formatDateTime(cell.getValue<Date>()),
       },
       {
         accessorKey: 'level',

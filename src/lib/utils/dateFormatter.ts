@@ -179,8 +179,17 @@ export const formatTime = (date: Date | string | null | undefined): string => {
 export const formatDateTime = (date: Date | string | null | undefined): string => {
     if (!date) return '';
     try {
-        const d = typeof date === 'string' ? new Date(date) : date;
+        let dateStr = date;
+        if (typeof dateStr === 'string' && dateStr.includes('T') && !dateStr.endsWith('Z') && !dateStr.includes('+')) {
+            // If it looks like an ISO string but has no timezone, assume UTC (Z) 
+            // since we've standardized the backend to UTC.
+            dateStr = dateStr + 'Z';
+        }
+
+        const d = typeof dateStr === 'string' ? new Date(dateStr) : dateStr;
         if (isNaN(d.getTime())) return '';
+
+        // format(d, ...) uses the local timezone of the device where the browser is running
         return format(d, 'dd/MM/yyyy HH:mm');
     } catch {
         return '';
