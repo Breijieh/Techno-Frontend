@@ -32,7 +32,8 @@ import {
     attendanceApi,
     timeSchedulesApi,
     manualAttendanceRequestApi,
-    laborApi
+    laborApi,
+    authApi
 } from '@/lib/api';
 import type { ProjectResponse } from '@/lib/api/projects';
 import type { AttendanceResponse } from '@/lib/api/attendance';
@@ -188,9 +189,9 @@ export default function AttendanceCheckIn() {
                     try {
                         const assignments = await laborApi.getEmployeeAssignments(employee.employeeNo);
                         const activeAssignment = assignments.find(
-                            (a: { assignmentStatus?: string; isActive?: boolean; endDate?: string }) => {
-                                const isActive = a.assignmentStatus === 'ACTIVE' || a.isActive === true;
-                                // Also check if assignment hasn't ended
+                            (a: any) => {
+                                const status = (a.assignmentStatus || '').toUpperCase();
+                                const isActive = status === 'ACTIVE' || a.isActive === true;
                                 if (isActive && a.endDate) {
                                     const endDate = new Date(a.endDate);
                                     return endDate >= new Date();
@@ -203,16 +204,27 @@ export default function AttendanceCheckIn() {
                             console.log('Found active labor assignment, using project:', {
                                 projectCode,
                                 assignmentNo: activeAssignment.assignmentNo,
-                                startDate: activeAssignment.startDate,
-                                endDate: activeAssignment.endDate
+                                status: activeAssignment.assignmentStatus
                             });
-                        } else {
-                            console.log('No active labor assignments found for employee');
                         }
                     } catch (assignErr) {
-                        // This is expected if employee doesn't have permission to view assignments
-                        // or if the endpoint doesn't exist
-                        console.warn('Could not check labor assignments (may require admin role):', assignErr);
+                        console.warn('Could not check labor assignments fallback:', assignErr);
+                    }
+                }
+
+                // If still no projectCode, check the User account for an explicit project assignment
+                if (!projectCode) {
+                    try {
+                        const currentUser = await authApi.getCurrentUser();
+                        if (currentUser && currentUser.projectCode) {
+                            projectCode = currentUser.projectCode;
+                            console.log('Project found from user account settings:', {
+                                projectCode,
+                                userType: currentUser.userType
+                            });
+                        }
+                    } catch (authErr) {
+                        console.warn('Could not check user account for project assignment:', authErr);
                     }
                 }
 
@@ -220,29 +232,19 @@ export default function AttendanceCheckIn() {
                     try {
                         const proj = await projectsApi.getProjectById(projectCode);
                         if (proj) {
-                            // Backend returns projectStatus, frontend interface may have status
-                            const projectStatus = proj.projectStatus || proj.status;
-                            // Check if project is ACTIVE
-                            if (projectStatus === 'ACTIVE') {
+                            const status = (proj.projectStatus || proj.status || '').toUpperCase();
+                            const isProjectActive = status === 'ACTIVE' || proj.isActive === true;
+
+                            if (isProjectActive) {
                                 setProject(proj);
                                 setProjectError(null);
-                                console.log('Project loaded successfully:', {
-                                    projectCode: proj.projectCode,
-                                    projectName: proj.projectName,
-                                    status: projectStatus,
-                                    projectStatus: proj.projectStatus,
-                                    statusField: proj.status,
-                                    hasGPS: !!(proj.projectLatitude && proj.projectLongitude),
-                                    attendanceRadius: proj.attendanceRadius || proj.gpsRadiusMeters,
-                                    source: employee.primaryProjectCode ? 'primaryProjectCode' : 'laborAssignment'
-                                });
+                                console.log('Project loaded and active:', proj.projectCode);
                             } else {
-                                console.warn(`Project ${projectCode} exists but is not ACTIVE. Status: ${projectStatus}`);
-                                setProjectError(`المشروع المخصص لك (${proj.projectName}) غير نشط حالياً. الحالة: ${projectStatus || 'غير معروف'}`);
-                                // Don't set project if not active - will show "no project" message
+                                const currentStatusAr = proj.projectStatusDisplay || status || 'غير نشط';
+                                setProjectError(`المشروع المخصص لك (${proj.projectName}) غير نشط حالياً. الحالة: ${currentStatusAr}`);
+                                console.warn(`Project ${projectCode} is not active. Status: ${status}`);
                             }
                         } else {
-                            console.warn(`Project ${projectCode} not found or returned null`);
                             setProjectError(`المشروع برقم ${projectCode} غير موجود`);
                         }
                     } catch (projErr) {

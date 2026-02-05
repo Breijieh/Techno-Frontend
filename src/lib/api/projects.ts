@@ -84,6 +84,8 @@ export interface ProjectResponse {
   requireGpsCheck?: string;
   hasGpsCoordinates?: boolean;
   scheduleId?: number; // Time schedule ID assigned to this project
+  isActive?: boolean;
+  projectStatusDisplay?: string;
 }
 
 export interface ProjectSummary {
