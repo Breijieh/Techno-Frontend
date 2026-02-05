@@ -21,6 +21,7 @@ import {
   Send,
 } from '@mui/icons-material';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { SELF_SERVICE_ALLOWED_ROLES } from '@/lib/permissions';
 import { loansApi, employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -32,8 +33,7 @@ import { formatDate } from '@/lib/utils/dateFormatter';
 export default function InstallmentPostponePage() {
   const router = useRouter();
 
-  // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  useRouteProtection(SELF_SERVICE_ALLOWED_ROLES);
 
   // Form state
   const [selectedLoanId, setSelectedLoanId] = useState<string>('');

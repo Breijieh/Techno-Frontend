@@ -27,6 +27,7 @@ import {
   Download,
 } from '@mui/icons-material';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { SELF_SERVICE_ALLOWED_ROLES } from '@/lib/permissions';
 import { loansApi, employeesApi } from '@/lib/api';
 import type { LoanDetailsResponse, InstallmentDetailsResponse } from '@/lib/api/loans';
 import { useApi } from '@/hooks/useApi';
@@ -38,8 +39,7 @@ export default function LoanRequestPage() {
   const router = useRouter();
   const toast = useToast();
 
-  // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  useRouteProtection(SELF_SERVICE_ALLOWED_ROLES);
 
   // Form state
   const [loanAmount, setLoanAmount] = useState<string>('');

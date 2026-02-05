@@ -28,6 +28,7 @@ import {
   TrendingUp,
 } from '@mui/icons-material';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { SELF_SERVICE_ALLOWED_ROLES } from '@/lib/permissions';
 import { allowancesApi, employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -38,8 +39,7 @@ import { formatDate } from '@/lib/utils/dateFormatter';
 
 export default function AllowanceRequestPage() {
   const router = useRouter();
-  // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  useRouteProtection(SELF_SERVICE_ALLOWED_ROLES);
 
   // Form state
   const [allowanceType, setAllowanceType] = useState<AllowanceType>('Salary Increase');

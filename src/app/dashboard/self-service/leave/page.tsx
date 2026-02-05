@@ -22,6 +22,7 @@ import {
   CalendarToday,
 } from '@mui/icons-material';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { SELF_SERVICE_ALLOWED_ROLES } from '@/lib/permissions';
 import { leavesApi, employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -33,7 +34,7 @@ type LeaveType = 'Annual' | 'Sick' | 'Emergency' | 'Unpaid' | 'Hajj' | 'Marriage
 export default function LeaveRequestPage() {
   const router = useRouter();
   // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  useRouteProtection(SELF_SERVICE_ALLOWED_ROLES);
 
   // Form state
   const [leaveType, setLeaveType] = useState<LeaveType>('Annual');

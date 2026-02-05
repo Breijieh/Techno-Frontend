@@ -38,6 +38,15 @@ function normalizeUserRole(backendRole: string): UserRole {
   return 'Admin';
 }
 
+/**
+ * All authenticated roles that can access self-service pages (profile, leave, loan, allowance, etc.)
+ * Use this in useRouteProtection on self-service pages so any logged-in user can access their own data.
+ */
+export const SELF_SERVICE_ALLOWED_ROLES: UserRole[] = [
+  'Admin', 'General Manager', 'HR Manager', 'Finance Manager', 'Project Manager',
+  'Project Secretary', 'Project Advisor', 'Regional Project Manager', 'Warehouse Manager', 'Employee',
+];
+
 // Arabic translations for role names
 export const ROLE_ARABIC_NAMES: Record<UserRole, string> = {
   'Admin': 'مدير النظام',
@@ -176,8 +185,16 @@ const SETTINGS_ROUTE_ROLES: Record<string, UserRole[]> = {
  * These override module-level permissions to match actual page restrictions
  */
 const ROUTE_ROLE_RESTRICTIONS: Record<string, UserRole[]> = {
-  // Dashboard route - accessible to all authenticated roles
-  '/dashboard': ['Admin', 'General Manager', 'HR Manager', 'Finance Manager', 'Project Manager', 'Project Secretary', 'Project Advisor', 'Regional Project Manager', 'Warehouse Manager', 'Employee'],
+  // Dashboard and self-service - accessible to all authenticated roles (see SELF_SERVICE_ALLOWED_ROLES)
+  '/dashboard': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/profile': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/leave': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/loan': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/allowance': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/installment-postpone': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/payroll': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/attendance': SELF_SERVICE_ALLOWED_ROLES,
+  '/dashboard/self-service/attendance-history': SELF_SERVICE_ALLOWED_ROLES,
 
   // Payroll routes
   '/dashboard/payroll/calculation': ['Admin', 'HR Manager', 'Finance Manager'],

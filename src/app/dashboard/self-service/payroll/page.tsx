@@ -25,6 +25,7 @@ import {
   ReceiptLong,
 } from '@mui/icons-material';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { SELF_SERVICE_ALLOWED_ROLES } from '@/lib/permissions';
 import { authApi, payrollApi, attendanceApi, employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import { useToast } from '@/contexts/ToastContext';
@@ -38,8 +39,7 @@ export default function EmployeePayrollPage() {
   const toast = useToast();
   const [selectedMonth, setSelectedMonth] = useState<string>('');
 
-  // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  useRouteProtection(SELF_SERVICE_ALLOWED_ROLES);
 
   // Get current user to extract employee number
   const { data: currentUser, loading: loadingUser, error: userError } = useApi(

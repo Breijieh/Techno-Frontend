@@ -19,6 +19,7 @@ import {
   LocationOn,
 } from '@mui/icons-material';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { SELF_SERVICE_ALLOWED_ROLES } from '@/lib/permissions';
 import { employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -29,8 +30,7 @@ import type { Employee } from '@/types';
 export default function EmployeeProfilePage() {
   const router = useRouter();
 
-  // Protect route - only employees
-  useRouteProtection(['Employee', 'Admin']);
+  useRouteProtection(SELF_SERVICE_ALLOWED_ROLES);
 
   // Get current user's employee data from API using /me endpoint
   const { data: employeeResponse, loading: loadingEmployee, error: employeeError } = useApi(
