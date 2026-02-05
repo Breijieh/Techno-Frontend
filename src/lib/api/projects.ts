@@ -123,6 +123,25 @@ export const projectsApi = {
   },
 
   /**
+   * Get projects where the given employee is the project manager.
+   */
+  async getProjectsByManager(
+    managerEmployeeNo: number,
+    params?: { page?: number; size?: number; sortBy?: string; sortDirection?: 'asc' | 'desc' }
+  ): Promise<PageResponse<ProjectSummary>> {
+    const queryParams = new URLSearchParams();
+    if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+    if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+    if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+    if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection);
+    const query = queryParams.toString();
+    const response = await apiClient.get<PageResponse<ProjectSummary>>(
+      `/projects/by-manager/${managerEmployeeNo}${query ? `?${query}` : ''}`
+    );
+    return response;
+  },
+
+  /**
    * Get active projects
    */
   async getActiveProjects(): Promise<ProjectSummary[]> {

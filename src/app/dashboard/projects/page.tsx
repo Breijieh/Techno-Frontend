@@ -29,11 +29,13 @@ import {
 import { lightTableTheme } from '@/lib/tableConfig';
 import { mrtArabicLocalization } from '@/lib/tables/mrt-arabic-localization';
 import useRouteProtection from '@/hooks/useRouteProtection';
+import { getUserRole } from '@/lib/permissions';
+import { getUserContext } from '@/lib/dataFilters';
 import type { Project } from '@/types';
 import ProjectForm from '@/components/forms/ProjectForm';
 import ProjectViewForm from '@/components/forms/ProjectViewForm';
 import DeleteConfirmDialog from '@/components/common/DeleteConfirmDialog';
-import { projectsApi, employeesApi } from '@/lib/api';
+import { projectsApi, employeesApi, authApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -54,11 +56,44 @@ export default function ProjectsListPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  // Fetch projects
+  const userRole = getUserRole();
+  const userContext = getUserContext();
+  const [resolvedManagerNo, setResolvedManagerNo] = useState<number | null>(userContext.employeeId ?? null);
+
+  // Resolve Project Manager employee no from /auth/me when not in session
+  useEffect(() => {
+    if (userRole !== 'Project Manager') return;
+    if (userContext.employeeId) return;
+    authApi.getCurrentUser()
+      .then((u) => {
+        const no = u?.employeeNo;
+        if (no != null) {
+          setResolvedManagerNo(no);
+          if (typeof window !== 'undefined') sessionStorage.setItem('employeeId', String(no));
+        }
+      })
+      .catch(() => {});
+  }, [userRole, userContext.employeeId]);
+
+  const fetchProjectsFn = useCallback(async () => {
+    const pageParams = { page: 0, size: 1000 };
+    if (userRole === 'Project Manager') {
+      const managerNo = resolvedManagerNo ?? userContext.employeeId;
+      if (managerNo) return projectsApi.getProjectsByManager(managerNo, pageParams);
+    }
+    return projectsApi.getAllProjects(pageParams);
+  }, [userRole, resolvedManagerNo, userContext.employeeId]);
+
+  const hasManagerNo = !!(resolvedManagerNo ?? userContext.employeeId);
   const { data: projectsData, loading: isLoading, error: projectsError, execute: loadProjects } = useApi(
-    () => projectsApi.getAllProjects({ page: 0, size: 1000 }),
-    { immediate: true }
+    fetchProjectsFn,
+    { immediate: userRole !== 'Project Manager' || hasManagerNo }
   );
+
+  // When PM and we just resolved manager no, fetch so we get by-manager response (no initial fetch until then)
+  useEffect(() => {
+    if (userRole === 'Project Manager' && resolvedManagerNo) loadProjects();
+  }, [resolvedManagerNo, userRole, loadProjects]);
 
   // Fetch employees for manager names
   const { data: employeesResponse } = useApi(
@@ -71,8 +106,7 @@ export default function ProjectsListPage() {
     return employeesResponse.employees.map(mapEmployeeResponseToEmployee);
   }, [employeesResponse]);
 
-  // Map ProjectSummary to Project type - only include fields available in backend summary
-  // Filter out cancelled (deleted) projects
+  // Map ProjectSummary to Project type; filter out cancelled (API already returns only PM's projects for Project Manager)
   const projects = useMemo(() => {
     if (!projectsData?.content) return [];
     return projectsData.content
@@ -83,14 +117,13 @@ export default function ProjectsListPage() {
         return status !== 'CANCELLED';
       })
       .map((summary) => {
-        // Extended ProjectSummary type with additional fields from backend
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const extendedSummary = summary as any;
         const status = extendedSummary.projectStatus || extendedSummary.status || 'ACTIVE';
 
         return {
           projectCode: summary.projectCode,
-          projectName: summary.projectName || '', // Use Arabic name
+          projectName: summary.projectName || '',
           projectAddress: extendedSummary.projectAddress || '',
           startDate: summary.startDate ? new Date(summary.startDate) : new Date(),
           endDate: summary.endDate ? new Date(summary.endDate) : new Date(),
@@ -99,7 +132,6 @@ export default function ProjectsListPage() {
             : 0,
           projectManagerId: extendedSummary.projectMgr || 0,
           status: status as 'ACTIVE' | 'COMPLETED' | 'ON_HOLD' | 'CANCELLED',
-          // Store additional fields from summary for display
           projectManagerName: extendedSummary.projectManagerName,
           completionPercentage: extendedSummary.completionPercentage ? Number(extendedSummary.completionPercentage) : undefined,
           durationDays: extendedSummary.durationDays,

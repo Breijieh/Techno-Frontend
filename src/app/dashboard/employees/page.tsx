@@ -38,7 +38,7 @@ import type { Employee } from '@/types';
 import EmployeeForm from '@/components/forms/EmployeeForm';
 import EmployeeViewForm from '@/components/forms/EmployeeViewForm';
 import DeleteConfirmDialog from '@/components/common/DeleteConfirmDialog';
-import { employeesApi, departmentsApi } from '@/lib/api';
+import { employeesApi, departmentsApi, authApi } from '@/lib/api';
 import type { DepartmentResponse, EmployeeRequest } from '@/lib/api';
 import { mapEmployeeResponseToEmployee, mapEmployeeToEmployeeRequest } from '@/lib/mappers/employeeMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
@@ -87,17 +87,21 @@ export default function EmployeesListPage() {
     { silent: true }
   );
 
-  // Fetch employees function
-  const fetchEmployeesFn = useCallback(
-    () =>
-      employeesApi.getAllEmployees({
-        page: 0, // Always page 0
-        size: 10000, // Fetch all (or a very large number)
-        sortBy: 'employeeNo',
-        sortDirection: 'asc',
-      }),
-    [] // No dependency on pagination anymore
-  );
+  // Fetch employees: by project for Project Manager, by department for HR Manager, else all
+  const fetchEmployeesFn = useCallback(async () => {
+    const pageParams = { page: 0, size: 10000 };
+    if (userRole === 'Project Manager' && userContext.projectCode) {
+      return employeesApi.getEmployeesByProject(userContext.projectCode, pageParams);
+    }
+    if (userRole === 'HR Manager' && userContext.departmentCode) {
+      return employeesApi.getEmployeesByDepartment(userContext.departmentCode, pageParams);
+    }
+    return employeesApi.getAllEmployees({
+      ...pageParams,
+      sortBy: 'employeeNo',
+      sortDirection: 'asc',
+    });
+  }, [userRole, userContext.projectCode, userContext.departmentCode]);
 
   const { execute: fetchEmployees, loading: loadingEmployees } = useApiWithToast(
     fetchEmployeesFn,
@@ -136,22 +140,56 @@ export default function EmployeesListPage() {
     }
   }, []);
 
-  // Load employees when pagination changes
+  // Load employees (for Project Manager without projectCode in session, resolve it from /auth/me or /employees/me first)
   useEffect(() => {
+    const pageParams = { page: 0, size: 10000 };
+
     const loadEmployees = async () => {
       try {
-        const response = await fetchEmployees();
-        if (response) {
+        let response: Awaited<ReturnType<typeof employeesApi.getEmployeesByProject>> | null = null;
+
+        if (userRole === 'Project Manager' && !userContext.projectCode) {
+          // Resolve projectCode from current user so we can fetch only this PM's project employees
+          let projectCode: number | undefined;
+          try {
+            const userInfo = await authApi.getCurrentUser();
+            projectCode = userInfo?.projectCode;
+            if (projectCode != null && typeof window !== 'undefined') {
+              sessionStorage.setItem('projectCode', String(projectCode));
+            }
+          } catch {
+            // Fallback: get from current user's employee record
+            try {
+              const me = await employeesApi.getMyEmployee();
+              projectCode = me?.primaryProjectCode;
+              if (projectCode != null && typeof window !== 'undefined') {
+                sessionStorage.setItem('projectCode', String(projectCode));
+              }
+            } catch {
+              // Leave projectCode undefined; filtered list will be empty
+            }
+          }
+          if (projectCode) {
+            response = await employeesApi.getEmployeesByProject(projectCode, pageParams);
+          }
+        }
+
+        if (!response) {
+          const fetched = await fetchEmployees();
+          if (fetched) response = fetched;
+        }
+
+        if (response?.employees) {
           const mappedEmployees = response.employees.map(mapEmployeeResponseToEmployee);
           setEmployees(mappedEmployees);
-          setTotalElements(response.totalElements);
+          setTotalElements(response.totalElements ?? mappedEmployees.length);
         }
       } catch (error) {
         console.error('Failed to load employees:', error);
       }
     };
     loadEmployees();
-  }, [fetchEmployees]);
+  }, [fetchEmployees, userRole, userContext.projectCode]);
 
   // Scroll table to the right on load (RTL behavior)
   useEffect(() => {
