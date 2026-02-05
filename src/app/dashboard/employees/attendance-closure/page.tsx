@@ -33,6 +33,7 @@ import { attendanceClosureApi } from '@/lib/api/attendance';
 import { mapAttendanceClosureResponseListToAttendanceDayClosureList } from '@/lib/mappers/attendanceClosureMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function AttendanceClosurePage() {
   const router = useRouter();
@@ -174,7 +175,7 @@ export default function AttendanceClosurePage() {
         minSize: 140,
         maxSize: 200,
         filterVariant: 'date-range',
-        Cell: ({ row }) => new Date(row.original.attendanceDate).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'isClosed',

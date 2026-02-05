@@ -40,7 +40,7 @@ import { useApiWithToast } from '@/hooks/useApiWithToast';
 import 'leaflet/dist/leaflet.css';
 import { formatDate, getTodayLocalDate } from '@/lib/utils/dateFormatter';
 
-// Helper function to format time from ISO string to HH:mm AM/PM
+// Helper function to format time from ISO string to HH:mm (24-hour)
 const formatTimeDisplay = (timeString: string | null | undefined): string => {
     if (!timeString) return '';
     try {
@@ -48,20 +48,17 @@ const formatTimeDisplay = (timeString: string | null | undefined): string => {
         if (!isNaN(date.getTime())) {
             const h = date.getHours();
             const m = date.getMinutes();
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            const displayH = h % 12 || 12;
+            // 24h format
             const pad = (n: number) => n.toString().padStart(2, '0');
-            return `${displayH}:${pad(m)} ${ampm}`;
+            return `${pad(h)}:${pad(m)}`;
         }
         // Try parsing as time string directly (HH:mm:ss or HH:mm)
         const timeMatch = timeString.match(/(\d{2}):(\d{2})/);
         if (timeMatch) {
-            let h = parseInt(timeMatch[1], 10);
+            const h = parseInt(timeMatch[1], 10);
             const m = parseInt(timeMatch[2], 10);
-            const ampm = h >= 12 ? 'PM' : 'AM';
-            h = h % 12 || 12;
             const pad = (n: number) => n.toString().padStart(2, '0');
-            return `${h}:${pad(m)} ${ampm}`;
+            return `${pad(h)}:${pad(m)}`;
         }
         return timeString;
     } catch {
@@ -506,10 +503,13 @@ export default function AttendanceCheckIn() {
     const { execute: handleCheckIn, loading: checkingIn } = useApiWithToast(
         async () => {
             if (!userLocation || !project || !employeeNo) return;
+            // Send local time (Wall Clock) to backend
+            const checkInTime = formatDate(new Date(), 'yyyy-MM-dd\'T\'HH:mm:ss');
             await attendanceApi.checkIn({
                 projectCode: project.projectCode,
                 latitude: userLocation.lat,
                 longitude: userLocation.lng,
+                checkInTime: checkInTime,
             });
             // Refresh attendance status
             const attendance = await attendanceApi.getTodayAttendance(employeeNo);
@@ -521,9 +521,12 @@ export default function AttendanceCheckIn() {
     const { execute: handleCheckOut, loading: checkingOut } = useApiWithToast(
         async () => {
             if (!userLocation || !employeeNo) return;
+            // Send local time (Wall Clock) to backend
+            const checkOutTime = formatDate(new Date(), 'yyyy-MM-dd\'T\'HH:mm:ss');
             await attendanceApi.checkOut({
                 latitude: userLocation.lat,
                 longitude: userLocation.lng,
+                checkOutTime: checkOutTime,
             });
             // Refresh attendance status
             const attendance = await attendanceApi.getTodayAttendance(employeeNo);
@@ -559,10 +562,10 @@ export default function AttendanceCheckIn() {
         }
 
         // Determine effective exit time: use provided value or default to work end time
-        const effectiveExitTime = manualExitTime || workEndTime || '17:00';
+        const effectiveExitTimeStr = manualExitTime;
 
-        // Validate exit time is after entry time
-        if (effectiveExitTime <= manualEntryTime) {
+        // Validate exit time is after entry time if provided
+        if (effectiveExitTimeStr && effectiveExitTimeStr <= manualEntryTime) {
             newErrors.exitTime = 'وقت الانصراف يجب أن يكون بعد وقت الدخول';
         }
 
@@ -580,11 +583,15 @@ export default function AttendanceCheckIn() {
         // Clear errors before submitting
         setManualErrors({});
 
+        // Combine date and time to ISO LocalDateTime
+        const entryDateTime = `${manualDate}T${manualEntryTime}:00`;
+        const exitDateTime = effectiveExitTimeStr ? `${manualDate}T${effectiveExitTimeStr}:00` : '';
+
         await executeManualRequest({
             employeeNo,
             attendanceDate: manualDate,
-            entryTime: manualEntryTime,
-            exitTime: effectiveExitTime,
+            entryTime: entryDateTime,
+            exitTime: exitDateTime,
             reason: manualReason,
         });
     };
@@ -647,10 +654,8 @@ export default function AttendanceCheckIn() {
                             const h = currentTime.getHours();
                             const m = currentTime.getMinutes();
                             const s = currentTime.getSeconds();
-                            const ampm = h >= 12 ? 'PM' : 'AM';
-                            const displayH = h % 12 || 12;
                             const pad = (n: number) => n.toString().padStart(2, '0');
-                            return `${displayH}:${pad(m)}:${pad(s)} ${ampm}`;
+                            return `${pad(h)}:${pad(m)}:${pad(s)}`;
                         })() : '--:--:--'}
                     </Typography>
                     <Chip

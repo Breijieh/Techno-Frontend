@@ -38,6 +38,7 @@ import { mapLaborRequestResponsesToTempLaborRequests, mapTempLaborRequestToLabor
 import { useToast } from '@/contexts/ToastContext';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorDisplay from '@/components/common/ErrorDisplay';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function TempLaborRequestsPage() {
   const router = useRouter();
@@ -247,7 +248,7 @@ export default function TempLaborRequestsPage() {
         accessorKey: 'requestDate',
         header: 'تاريخ الطلب',
         size: 130,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'projectName',
@@ -289,13 +290,13 @@ export default function TempLaborRequestsPage() {
         accessorKey: 'fromDate',
         header: 'من تاريخ',
         size: 130,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'toDate',
         header: 'إلى تاريخ',
         size: 130,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'dailyWage',

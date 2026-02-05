@@ -39,6 +39,7 @@ import ApprovalDialog from '@/components/common/ApprovalDialog';
 import { allowancesApi, type AllowanceDetailsResponse } from '@/lib/api/allowances';
 import { mapAllowanceResponseListToAllowanceRequestList } from '@/lib/mappers/allowanceMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
+import { formatLocalDateYYYYMMDD, formatInvariantDate } from '@/lib/utils/dateFormatter';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
 
 export default function AllowanceRequestsPage() {
@@ -177,8 +178,8 @@ export default function AllowanceRequestsPage() {
       const typeCode = typeCodeMap[data.allowanceType] || 11; // Default to Special Allowance
 
       const transactionDate = data.requestDate instanceof Date
-        ? data.requestDate.toISOString().split('T')[0]
-        : new Date().toISOString().split('T')[0];
+        ? formatLocalDateYYYYMMDD(data.requestDate)
+        : formatLocalDateYYYYMMDD(new Date());
 
       await allowancesApi.submitAllowanceRequest({
         employeeNo,
@@ -340,7 +341,7 @@ export default function AllowanceRequestsPage() {
         header: 'تاريخ الطلب',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
     ],
     [getEmployeeName],

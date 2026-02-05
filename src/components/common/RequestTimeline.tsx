@@ -12,7 +12,7 @@ import {
     RadioButtonUnchecked,
     Error as ErrorIcon,
 } from '@mui/icons-material';
-import { formatDate } from '@/lib/utils/dateFormatter';
+import { formatDate, formatDateTime } from '@/lib/utils/dateFormatter';
 
 interface TimelineStep {
     label: string;
@@ -141,7 +141,7 @@ export default function RequestTimeline({
                                 </Typography>
                                 {step.date && (
                                     <Typography variant="caption" color="text.secondary">
-                                        {formatDate(step.date)}
+                                        {formatDateTime(step.date)}
                                     </Typography>
                                 )}
                             </Box>

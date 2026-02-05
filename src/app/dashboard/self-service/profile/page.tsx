@@ -23,6 +23,7 @@ import { employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 import type { Employee } from '@/types';
 
 export default function EmployeeProfilePage() {
@@ -200,7 +201,7 @@ export default function EmployeeProfilePage() {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <CalendarToday sx={{ fontSize: '18px', color: '#6B7280' }} />
                   <Typography sx={{ fontSize: '14px', color: '#111827' }}>
-                    {employee.dateOfBirth ? employee.dateOfBirth.toLocaleDateString('en-GB') : 'غير متوفر'}
+                    {employee.dateOfBirth ? formatInvariantDate(employee.dateOfBirth) : 'غير متوفر'}
                   </Typography>
                 </Box>
               </Box>
@@ -260,7 +261,7 @@ export default function EmployeeProfilePage() {
               <Box>
                 <Typography sx={{ fontSize: '12px', color: '#6B7280', mb: 0.5 }}>تاريخ التعيين</Typography>
                 <Typography sx={{ fontSize: '14px', color: '#111827' }}>
-                  {employee.hireDate.toLocaleDateString('en-GB')}
+                  {formatInvariantDate(employee.hireDate)}
                 </Typography>
               </Box>
               <Box>
@@ -300,7 +301,7 @@ export default function EmployeeProfilePage() {
                     <Box>
                       <Typography sx={{ fontSize: '12px', color: '#6B7280', mb: 0.5 }}>تاريخ انتهاء جواز السفر</Typography>
                       <Typography sx={{ fontSize: '14px', color: '#111827' }}>
-                        {employee.passportExpiry.toLocaleDateString('en-GB')}
+                        {employee.passportExpiry ? formatInvariantDate(employee.passportExpiry) : ''}
                       </Typography>
                     </Box>
                   )}
@@ -308,7 +309,7 @@ export default function EmployeeProfilePage() {
                     <Box>
                       <Typography sx={{ fontSize: '12px', color: '#6B7280', mb: 0.5 }}>تاريخ انتهاء الإقامة</Typography>
                       <Typography sx={{ fontSize: '14px', color: '#111827' }}>
-                        {employee.residenceExpiry.toLocaleDateString('en-GB')}
+                        {employee.residenceExpiry ? formatInvariantDate(employee.residenceExpiry) : ''}
                       </Typography>
                     </Box>
                   )}

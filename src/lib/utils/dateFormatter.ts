@@ -67,6 +67,45 @@ export const formatDateShort = (date: Date | string | null | undefined): string 
 };
 
 /**
+ * Format a valid Date object or ISO string (YYYY-MM-DD...) to DD/MM/YYYY 
+ * WITHOUT applying local timezone conversion.
+ * 
+ * Assumes the input Date object (if Date) represents the exact date in UTC (e.g. 00:00 UTC).
+ * Assumes the input string (if string) is an ISO date.
+ * 
+ * @param date - Date object or ISO string
+ * @returns Formatted date string in DD/MM/YYYY format
+ */
+export const formatInvariantDate = (date: Date | string | null | undefined): string => {
+    if (!date) return '';
+    try {
+        if (date instanceof Date) {
+            if (isNaN(date.getTime())) return '';
+            // Use UTC components to ensure we get the exact date stored in the object
+            // This is primarily for dates that were parsed from "YYYY-MM-DD" (which become UTC midnight)
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const year = date.getUTCFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Handle string input
+        // Fallback to simple string parsing for ISO formats to be absolutely safe against timezone shifts
+        const cleanDate = date.split('T')[0];
+        const parts = cleanDate.split('-');
+        if (parts.length === 3) {
+            const [year, month, day] = parts;
+            return `${day}/${month}/${year}`;
+        }
+
+        // Fallback for non-iso strings (?) - unlikely to happen for Dates
+        return '';
+    } catch {
+        return '';
+    }
+};
+
+/**
  * Format a date to YYYY-MM-DD (ISO format) for API
  * @param date - Date object or date string
  * @returns Formatted date string YYYY-MM-DD
@@ -104,4 +143,46 @@ export const formatLocalDateYYYYMMDD = (d: Date): string => {
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+};
+
+/**
+ * Format a Date to HH:mm (24-hour format)
+ * @param date - Date object or date string
+ * @returns Formatted time string HH:mm
+ */
+export const formatTime = (date: Date | string | null | undefined): string => {
+    if (!date) return '';
+    try {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        if (!isNaN(d.getTime())) {
+            return format(d, 'HH:mm');
+        }
+
+        // Fallback: Try parsing as time string directly (HH:mm:ss or HH:mm)
+        if (typeof date === 'string') {
+            const timeMatch = date.match(/(\d{2}):(\d{2})/);
+            if (timeMatch) {
+                return `${timeMatch[1]}:${timeMatch[2]}`;
+            }
+        }
+        return '';
+    } catch {
+        return '';
+    }
+};
+
+/**
+ * Format a Date to dd/MM/yyyy HH:mm (24-hour format)
+ * @param date - Date object or date string
+ * @returns Formatted date-time string
+ */
+export const formatDateTime = (date: Date | string | null | undefined): string => {
+    if (!date) return '';
+    try {
+        const d = typeof date === 'string' ? new Date(date) : date;
+        if (isNaN(d.getTime())) return '';
+        return format(d, 'dd/MM/yyyy HH:mm');
+    } catch {
+        return '';
+    }
 };

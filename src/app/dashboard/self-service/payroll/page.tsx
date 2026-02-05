@@ -368,7 +368,10 @@ export default function EmployeePayrollPage() {
             >
               {availableMonths.map((month) => (
                 <MenuItem key={month} value={month}>
-                  {new Date(month + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
+                  {(() => {
+                    const [y, m] = month.split('-').map(Number);
+                    return new Date(y, m - 1, 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                  })()}
                 </MenuItem>
               ))}
             </TextField>
@@ -411,9 +414,10 @@ export default function EmployeePayrollPage() {
                 color: '#FFFFFF',
               }}
             >
-              <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>
-                Payroll Summary - {new Date(selectedMonth + '-01').toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}
-              </Typography>
+              Payroll Summary - {(() => {
+                const [y, m] = selectedMonth.split('-').map(Number);
+                return new Date(y, m - 1, 1).toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+              })()}
               <Grid container spacing={3}>
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <Typography sx={{ fontSize: '12px', opacity: 0.9, mb: 0.5 }}>
@@ -588,7 +592,10 @@ export default function EmployeePayrollPage() {
                       return (
                         <TableRow key={payroll.salaryId} hover>
                           <TableCell>
-                            {monthYear ? new Date(monthYear + '-01').toLocaleDateString('ar-SA', { year: 'numeric', month: 'long' }) : 'غير متاح'}
+                            {monthYear ? (() => {
+                              const [y, m] = monthYear.split('-').map(Number);
+                              return new Date(y, m - 1, 1).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long' });
+                            })() : 'غير متاح'}
                           </TableCell>
                           <TableCell align="right">{payroll.grossSalary?.toLocaleString() || '0'} SAR</TableCell>
                           <TableCell align="right" sx={{ color: '#059669' }}>

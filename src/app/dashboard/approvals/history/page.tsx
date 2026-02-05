@@ -31,6 +31,7 @@ import { approvalsApi, employeesApi } from '@/lib/api';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorDisplay from '@/components/common/ErrorDisplay';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 import type { UnifiedApprovalRequest } from '@/lib/api/approvals';
 import type { EmployeeResponse } from '@/lib/api/employees';
 
@@ -230,7 +231,7 @@ export default function ApprovalHistoryPage() {
         accessorKey: 'requestDate',
         header: 'تاريخ الطلب',
         size: 130,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'status',
@@ -274,8 +275,8 @@ export default function ApprovalHistoryPage() {
         header: 'تاريخ الإجراء',
         size: 130,
         Cell: ({ cell }) => {
-          const date = cell.getValue<Date | null>();
-          return date ? new Date(date).toLocaleDateString('en-GB') : '-';
+          const date = cell.getValue<string | null>();
+          return date ? date.split('T')[0].split('-').reverse().join('/') : '-';
         },
       },
     ],

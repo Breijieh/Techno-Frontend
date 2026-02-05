@@ -22,6 +22,7 @@ import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorDisplay from '@/components/common/ErrorDisplay';
 import { useToast } from '@/contexts/ToastContext';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function TempLaborAvailabilityPage() {
   const router = useRouter();
@@ -72,8 +73,8 @@ export default function TempLaborAvailabilityPage() {
         'اسم العامل': worker.workerName,
         'التخصص': worker.specialization,
         'الجنسية': worker.nationality,
-        'تاريخ البدء': new Date(worker.startDate).toLocaleDateString('en-GB'),
-        'تاريخ الانتهاء': new Date(worker.endDate).toLocaleDateString('en-GB'),
+        'تاريخ البدء': formatInvariantDate(worker.startDate),
+        'تاريخ الانتهاء': formatInvariantDate(worker.endDate),
         'الأجر اليومي': worker.dailyWage,
         'الحالة': worker.status,
       }));

@@ -32,7 +32,7 @@ import { employeesApi, projectsApi } from '@/lib/api';
 import { mapAttendanceResponseListToTransactionList } from '@/lib/mappers/attendanceMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { exportDataToCSV } from '@/lib/utils/exportUtils';
-import { getTodayLocalDate, formatLocalDateYYYYMMDD } from '@/lib/utils/dateFormatter';
+import { getTodayLocalDate, formatLocalDateYYYYMMDD, formatInvariantDate } from '@/lib/utils/dateFormatter';
 import type { AttendanceTransaction } from '@/types';
 import type { AttendanceResponse } from '@/lib/api/attendance';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
@@ -196,7 +196,7 @@ export default function AttendancePage() {
         size: 130,
         filterVariant: 'date-range',
         enableGlobalFilter: false,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'entryTime',

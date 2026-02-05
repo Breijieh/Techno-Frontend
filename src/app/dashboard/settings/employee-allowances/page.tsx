@@ -36,6 +36,7 @@ import { useApi } from '@/hooks/useApi';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorDisplay from '@/components/common/ErrorDisplay';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function EmployeeAllowancesPage() {
   const router = useRouter();
@@ -234,7 +235,7 @@ export default function EmployeeAllowancesPage() {
         accessorKey: 'createdDate',
         header: 'تاريخ الإنشاء',
         size: 150,
-        Cell: ({ row }) => new Date(row.original.createdDate).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
     ],
     [getEmployeeName]

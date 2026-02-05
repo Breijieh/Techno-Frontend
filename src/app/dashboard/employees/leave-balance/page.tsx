@@ -26,6 +26,7 @@ import {
 } from 'material-react-table';
 import { lightTableTheme } from '@/lib/tableConfig';
 import { mrtArabicLocalization } from '@/lib/tables/mrt-arabic-localization';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 import type { LeaveBalance } from '@/types';
 import useRouteProtection from '@/hooks/useRouteProtection';
 import { getUserRole } from '@/lib/permissions';
@@ -187,9 +188,7 @@ export default function LeaveBalancePage() {
         accessorKey: 'lastUpdated',
         header: 'آخر تحديث',
         size: 150,
-        filterVariant: 'date-range',
-        enableGlobalFilter: false,
-        Cell: ({ cell }) => cell.getValue<Date>().toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
     ],
     []

@@ -29,6 +29,7 @@ export interface EmployeeRequest {
   mobile?: string;
   username?: string;
   password?: string;
+  managerId?: number;
 }
 
 export interface EmployeeResponse {
@@ -71,6 +72,8 @@ export interface EmployeeResponse {
   createdBy?: string;
   modifiedDate?: string;
   modifiedBy?: string;
+  managerId?: number;
+  managerName?: string;
 }
 
 export interface EmployeeListResponse {

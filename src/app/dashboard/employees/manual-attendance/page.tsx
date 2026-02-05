@@ -278,7 +278,10 @@ export default function ManualAttendancePage() {
         header: 'التاريخ',
         size: 120,
         filterVariant: 'date-range',
-        Cell: ({ row }) => new Date(row.original.attendanceDate).toLocaleDateString('en-GB'),
+        Cell: ({ row }) => {
+          const dateStr = row.original.attendanceDate as unknown as string;
+          return dateStr ? dateStr.split('T')[0].split('-').reverse().join('/') : '';
+        },
       },
       {
         accessorKey: 'entryTime',

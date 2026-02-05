@@ -50,6 +50,7 @@ import { loansApi, type LoanDetailsResponse } from '@/lib/api/loans';
 import { mapLoanDetailsResponseListToLoanRequestList, mapInstallmentDetailsResponseListToLoanInstallmentList } from '@/lib/mappers/loanMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
+import { formatLocalDateYYYYMMDD, formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function LoanRequestsPage() {
   const router = useRouter();
@@ -174,8 +175,8 @@ export default function LoanRequestsPage() {
       }
 
       const firstPaymentDate = data.firstPaymentDate instanceof Date
-        ? data.firstPaymentDate.toISOString().split('T')[0]
-        : new Date(data.firstPaymentDate).toISOString().split('T')[0];
+        ? formatLocalDateYYYYMMDD(data.firstPaymentDate)
+        : data.firstPaymentDate;
 
       await loansApi.submitLoanRequest({
         employeeNo,
@@ -310,7 +311,7 @@ export default function LoanRequestsPage() {
         header: 'الدفعة الأولى',
         size: 140,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'remainingBalance',
@@ -405,7 +406,7 @@ export default function LoanRequestsPage() {
         accessorKey: 'requestDate',
         header: 'تاريخ الطلب',
         size: 130,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
     ],
     [loanResponses],
@@ -883,10 +884,10 @@ export default function LoanRequestsPage() {
                 {installmentSchedule.map((inst) => (
                   <TableRow key={inst.installmentNo}>
                     <TableCell>#{inst.installmentNo}</TableCell>
-                    <TableCell>{new Date(inst.dueDate).toLocaleDateString('en-GB')}</TableCell>
+                    <TableCell>{new Date(inst.dueDate as unknown as string).toISOString().split('T')[0].split('-').reverse().join('/')}</TableCell>
                     <TableCell>ر.س {inst.installmentAmount.toLocaleString('ar-SA')}</TableCell>
                     <TableCell>
-                      {inst.paidDate ? new Date(inst.paidDate).toLocaleDateString('en-GB') : '-'}
+                      {inst.paidDate ? new Date(inst.paidDate as unknown as string).toISOString().split('T')[0].split('-').reverse().join('/') : '-'}
                     </TableCell>
                     <TableCell>
                       <Chip

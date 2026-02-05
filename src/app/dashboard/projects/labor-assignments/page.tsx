@@ -40,6 +40,7 @@ import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
 import { ApiError } from '@/lib/api/client';
 import type { LaborAssignmentDto, LaborAssignmentResponse } from '@/lib/api/labor';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function LaborAssignmentsPage() {
   const router = useRouter();
@@ -432,14 +433,14 @@ export default function LaborAssignmentsPage() {
         header: 'من تاريخ',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'toDate',
         header: 'إلى تاريخ',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         id: 'status',

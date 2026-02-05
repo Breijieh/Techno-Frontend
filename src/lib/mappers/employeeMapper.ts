@@ -58,7 +58,7 @@ export function mapEmployeeResponseToEmployee(response: EmployeeResponse): Emplo
     passportExpiry,
     residenceExpiry: residencyExpiry,
     vacationBalance,
-    managerId: undefined, // Not available in backend
+    managerId: response.managerId,
     projectCode: response.primaryProjectCode,
     socialInsuranceNo: response.socialInsuranceNo,
   };
@@ -103,7 +103,9 @@ export function mapEmployeeToEmployeeRequest(employee: Partial<Employee>): Emplo
 
   return {
     employeeName,
-    nationalId: employee.nationalId || '',
+    nationalId: employee.nationality === 'المملكة العربية السعودية'
+      ? (employee.nationalId || '')
+      : (employee.residenceId || employee.passportNumber || ''), // For foreigners, use residenceId or passport as nationalId
     nationality: employee.nationality || '',
     employeeCategory,
     passportNo: employee.passportNumber,
@@ -127,6 +129,7 @@ export function mapEmployeeToEmployeeRequest(employee: Partial<Employee>): Emplo
     mobile: employee.phone || '',
     username: employee.username,
     password: employee.password,
+    managerId: employee.managerId,
   };
 }
 

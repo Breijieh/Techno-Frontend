@@ -24,7 +24,8 @@ import {
   MaterialReactTable,
   type MRT_ColumnDef,
   useMaterialReactTable,
-  type MRT_PaginationState,
+  type MRT_RowVirtualizer, // Added for ref
+  // type MRT_PaginationState,
 } from 'material-react-table';
 
 import PermissionGuard from '@/components/common/PermissionGuard';
@@ -59,13 +60,16 @@ export default function EmployeesListPage() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [pagination, setPagination] = useState<MRT_PaginationState>({
+  /* const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 25,
-  });
+  }); */
   const [totalElements, setTotalElements] = useState(0);
   const userRole = getUserRole();
   const userContext = getUserContext();
+
+  // Virtualizer Ref
+  const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null);
 
   // Protect route based on role
   useRouteProtection();
@@ -87,12 +91,12 @@ export default function EmployeesListPage() {
   const fetchEmployeesFn = useCallback(
     () =>
       employeesApi.getAllEmployees({
-        page: pagination.pageIndex,
-        size: pagination.pageSize,
+        page: 0, // Always page 0
+        size: 10000, // Fetch all (or a very large number)
         sortBy: 'employeeNo',
         sortDirection: 'asc',
       }),
-    [pagination.pageIndex, pagination.pageSize]
+    [] // No dependency on pagination anymore
   );
 
   const { execute: fetchEmployees, loading: loadingEmployees } = useApiWithToast(
@@ -147,7 +151,7 @@ export default function EmployeesListPage() {
       }
     };
     loadEmployees();
-  }, [fetchEmployees, pagination]);
+  }, [fetchEmployees]);
 
   // Scroll table to the right on load (RTL behavior)
   useEffect(() => {
@@ -268,8 +272,8 @@ export default function EmployeesListPage() {
 
       // Refresh employee list
       const response = await employeesApi.getAllEmployees({
-        page: pagination.pageIndex,
-        size: pagination.pageSize,
+        page: 0,
+        size: 10000,
         sortBy: 'employeeNo',
         sortDirection: 'asc',
       });
@@ -298,8 +302,8 @@ export default function EmployeesListPage() {
 
       // Refresh employee list
       const response = await employeesApi.getAllEmployees({
-        page: pagination.pageIndex,
-        size: pagination.pageSize,
+        page: 0,
+        size: 10000,
         sortBy: 'employeeNo',
         sortDirection: 'asc',
       });
@@ -498,16 +502,27 @@ export default function EmployeesListPage() {
     enableGlobalFilterModes: false, // Disable filter mode switching
     positionGlobalFilter: 'none', // Hide MRT's built-in search (we use custom)
     enableToolbarInternalActions: true, // Keep MRT toolbar icons (columns, density)
-    manualPagination: true,
+
+    // Row Virtualization Config
+    enableRowVirtualization: true,
+    enablePagination: false, // Disable pagination for infinite scroll
+    enableBottomToolbar: true, // Keep bottom toolbar for summary/total count
+    rowVirtualizerInstanceRef, // Optional as per doc, but good for access
+    rowVirtualizerOptions: { overscan: 10 },
+    // layoutMode: 'grid', // REMOVED: Not in the user's provided doc. Can cause lag if not needed.
+
+    getRowId: (row) => row.employeeId.toString(), // Optimization: Stable keys for virtualization
+
+    // manualPagination: true, // REMOVED: We are fetching everything at once
     rowCount: totalElements,
-    onPaginationChange: setPagination,
+    // onPaginationChange: setPagination, // REMOVED
     state: {
-      pagination,
+      // pagination, // REMOVED
       isLoading,
     },
     initialState: {
       ...lightTableTheme.initialState,
-      density: 'comfortable',
+      density: 'comfortable', // Comfortable by default for better visibility
       pagination: { pageSize: 25, pageIndex: 0 },
       columnPinning: {
         left: ['mrt-row-actions'], // Physical left = logical end in RTL (actions stay left)
@@ -521,7 +536,7 @@ export default function EmployeesListPage() {
       size: 150,
     },
     localization: mrtArabicLocalization,
-    layoutMode: 'grid',
+    // layoutMode: 'grid', // Duplicate removed
     // Pseudo-RTL Mirroring
     muiTableHeadCellProps: {
       sx: {
@@ -543,6 +558,7 @@ export default function EmployeesListPage() {
         overflowX: 'auto',
         maxWidth: '100%',
         width: '100%',
+        maxHeight: 'calc(100vh - 280px)', // Fixed height for virtualization (adjusted for header/toolbar)
       },
     },
     muiTopToolbarProps: {
@@ -557,6 +573,8 @@ export default function EmployeesListPage() {
       sx: {
         ...(lightTableTheme.muiBottomToolbarProps as { sx?: Record<string, unknown> })?.sx,
         direction: 'rtl',
+        position: 'relative', // Ensure it stays at bottom logically
+        zIndex: 1,
       },
     },
     renderTopToolbarCustomActions: ({ table }) => {
@@ -701,38 +719,44 @@ export default function EmployeesListPage() {
       <Box sx={{ display: 'flex', gap: 0.5 }}>
         <PermissionGuard module="employees" action="read">
           <Tooltip title="عرض التفاصيل">
-            <IconButton
-              size="small"
-              sx={{ color: '#0c2b7a' }}
-              onClick={() => handleView(row.original)}
-              disabled={isActionLoading}
-            >
-              <Visibility fontSize="small" />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                sx={{ color: '#0c2b7a' }}
+                onClick={() => handleView(row.original)}
+                disabled={isActionLoading}
+              >
+                <Visibility fontSize="small" />
+              </IconButton>
+            </span>
           </Tooltip>
         </PermissionGuard>
         <PermissionGuard module="employees" action="update">
           <Tooltip title="تعديل">
-            <IconButton
-              size="small"
-              sx={{ color: '#059669' }}
-              onClick={() => handleEdit(row.original)}
-              disabled={isActionLoading}
-            >
-              <Edit fontSize="small" />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                sx={{ color: '#059669' }}
+                onClick={() => handleEdit(row.original)}
+                disabled={isActionLoading}
+              >
+                <Edit fontSize="small" />
+              </IconButton>
+            </span>
           </Tooltip>
         </PermissionGuard>
         <PermissionGuard module="employees" action="delete">
           <Tooltip title="حذف">
-            <IconButton
-              size="small"
-              sx={{ color: '#DC2626' }}
-              onClick={() => handleDelete(row.original)}
-              disabled={isActionLoading || row.original.status === 'TERMINATED'}
-            >
-              <Delete fontSize="small" />
-            </IconButton>
+            <span>
+              <IconButton
+                size="small"
+                sx={{ color: '#DC2626' }}
+                onClick={() => handleDelete(row.original)}
+                disabled={isActionLoading || row.original.status === 'TERMINATED'}
+              >
+                <Delete fontSize="small" />
+              </IconButton>
+            </span>
           </Tooltip>
         </PermissionGuard>
       </Box>

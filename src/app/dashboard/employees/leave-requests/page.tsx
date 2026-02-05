@@ -41,7 +41,7 @@ import { leavesApi, type LeaveDetailsResponse } from '@/lib/api/leaves';
 import { authApi } from '@/lib/api/auth';
 import { mapLeaveDetailsResponseListToLeaveRequestList } from '@/lib/mappers/leaveMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
-import { formatDate } from '@/lib/utils/dateFormatter';
+import { formatDate, formatDateTime, formatLocalDateYYYYMMDD, formatInvariantDate } from '@/lib/utils/dateFormatter';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
 
 export default function LeaveRequestsPage() {
@@ -170,11 +170,11 @@ export default function LeaveRequestsPage() {
       }
 
       const fromDate = data.fromDate instanceof Date
-        ? data.fromDate.toISOString().split('T')[0]
-        : new Date(data.fromDate).toISOString().split('T')[0];
+        ? formatLocalDateYYYYMMDD(data.fromDate)
+        : data.fromDate;
       const toDate = data.toDate instanceof Date
-        ? data.toDate.toISOString().split('T')[0]
-        : new Date(data.toDate).toISOString().split('T')[0];
+        ? formatLocalDateYYYYMMDD(data.toDate)
+        : data.toDate;
 
       await leavesApi.submitLeaveRequest({
         employeeNo,
@@ -346,14 +346,14 @@ export default function LeaveRequestsPage() {
         header: 'من تاريخ',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => formatDate(cell.getValue<Date>()),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'toDate',
         header: 'إلى تاريخ',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => formatDate(cell.getValue<Date>()),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'numberOfDays',
@@ -456,7 +456,7 @@ export default function LeaveRequestsPage() {
         header: 'تاريخ الطلب',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => formatDate(cell.getValue<Date>()),
+        Cell: ({ cell }) => formatDateTime(cell.getValue<Date>()),
       },
     ],
     [leaveResponses],

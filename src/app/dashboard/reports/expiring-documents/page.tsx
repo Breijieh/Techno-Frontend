@@ -30,6 +30,7 @@ import { employeesApi, type DocumentExpiryResponse } from '@/lib/api/employees';
 import { useApi } from '@/hooks/useApi';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import ErrorDisplay from '@/components/common/ErrorDisplay';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 interface ExpiringDoc {
   employeeId: number;
@@ -246,7 +247,7 @@ export default function ExpiringDocumentsPage() {
         accessorKey: 'expiryDate',
         header: 'تاريخ الانتهاء',
         size: 140,
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
       {
         accessorKey: 'daysRemaining',

@@ -8,6 +8,7 @@ export interface CheckInRequest {
   projectCode: number;
   latitude: number;
   longitude: number;
+  checkInTime?: string; // ISO string
   notes?: string;
 }
 
@@ -25,6 +26,7 @@ export interface CheckInResponse {
 export interface CheckOutRequest {
   latitude: number;
   longitude: number;
+  checkOutTime?: string; // ISO string
   notes?: string;
 }
 
@@ -362,8 +364,8 @@ export interface ManualAttendanceRequestResponse {
 export interface SubmitManualAttendanceRequestParams {
   employeeNo: number;
   attendanceDate: string; // ISO date string
-  entryTime: string; // HH:mm format
-  exitTime: string; // HH:mm format
+  entryTime: string; // ISO LocalDateTime string (YYYY-MM-DDTHH:mm:ss)
+  exitTime?: string; // ISO LocalDateTime string (YYYY-MM-DDTHH:mm:ss)
   reason: string;
 }
 

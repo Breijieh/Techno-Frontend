@@ -28,6 +28,7 @@ import { getUserRole } from '@/lib/permissions';
 import type { EmployeeResponse } from '@/lib/api/employees';
 import type { AttendanceListResponse } from '@/lib/api/attendance';
 import { getChartTranslations, getResponsiveChartOption } from '@/lib/charts/echarts-config';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 
 export default function AttendanceReportsPage() {
   const router = useRouter();
@@ -203,7 +204,7 @@ export default function AttendanceReportsPage() {
           'Transaction ID': record.transactionId,
           'Employee ID': record.employeeNo,
           'Employee Name': ((employee as unknown) as { employeeName: string })?.employeeName || record.employeeName || 'غير معروف',
-          'Date': record.attendanceDate ? new Date(record.attendanceDate).toLocaleDateString('en-GB') : 'غير متاح',
+          'Date': record.attendanceDate ? formatInvariantDate(record.attendanceDate) : 'غير متاح',
           'Entry Time': record.entryTime || 'غير متاح',
           'Exit Time': record.exitTime || 'غير متاح',
           'Scheduled Hours': record.scheduledHours || 0,
@@ -348,7 +349,8 @@ export default function AttendanceReportsPage() {
     const presentCounts = days.map(day => dailyCounts.get(day) || 0);
     const dayLabels = days.map(day => {
       const date = new Date(year, month - 1, day);
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const dateObj = new Date(year, month - 1, day);
+      return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     });
 
     const option = {

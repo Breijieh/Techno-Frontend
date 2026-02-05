@@ -25,8 +25,7 @@ import {
 } from '@mui/icons-material';
 import { notificationsApi, type NotificationResponse } from '@/lib/api/notifications';
 import { getNotificationIconType, getNotificationCategory, type NotificationIconType } from '@/lib/utils/notifications';
-import { formatDistanceToNow } from 'date-fns';
-import { arSA } from 'date-fns/locale';
+import { formatDateTime } from '@/lib/utils/dateFormatter';
 
 export default function NotificationBell() {
   const router = useRouter();
@@ -175,11 +174,7 @@ export default function NotificationBell() {
   };
 
   const formatTime = (dateString: string) => {
-    try {
-      return formatDistanceToNow(new Date(dateString), { addSuffix: true, locale: arSA });
-    } catch {
-      return '';
-    }
+    return formatDateTime(dateString);
   };
 
   const getCleanMessage = (message: string) => {

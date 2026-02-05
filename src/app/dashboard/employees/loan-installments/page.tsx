@@ -155,7 +155,11 @@ export default function LoanInstallmentsPage() {
         header: 'تاريخ الاستحقاق',
         size: 120,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => cell.getValue<Date>().toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => {
+          const date = cell.getValue<Date>();
+          if (!date) return '-';
+          return date.toISOString().split('T')[0].split('-').reverse().join('/');
+        },
       },
       {
         accessorKey: 'amount',
@@ -210,14 +214,22 @@ export default function LoanInstallmentsPage() {
         header: 'تاريخ الدفع',
         size: 120,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => cell.getValue<Date | undefined>()?.toLocaleDateString('en-GB') || '-',
+        Cell: ({ cell }) => {
+          const date = cell.getValue<Date | undefined>();
+          if (!date) return '-';
+          return date.toISOString().split('T')[0].split('-').reverse().join('/');
+        },
       },
       {
         accessorKey: 'postponedTo',
         header: 'مؤجل إلى',
         size: 120,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => cell.getValue<Date | undefined>()?.toLocaleDateString('en-GB') || '-',
+        Cell: ({ cell }) => {
+          const date = cell.getValue<Date | undefined>();
+          if (!date) return '-';
+          return date.toISOString().split('T')[0].split('-').reverse().join('/');
+        },
       },
     ],
     [installmentResponses, getEmployeeName]

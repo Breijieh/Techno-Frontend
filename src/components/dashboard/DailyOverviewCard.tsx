@@ -16,6 +16,7 @@ import {
 import type { DailyOverviewDto } from '@/lib/api/attendance';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { formatTime } from '@/lib/utils/dateFormatter';
 
 interface DailyOverviewCardProps {
     overview: DailyOverviewDto;
@@ -116,7 +117,7 @@ export default function DailyOverviewCard({ overview, loading }: DailyOverviewCa
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                 <Login sx={{ fontSize: 20, color: isCheckedIn ? '#10B981' : '#9CA3AF' }} />
                                 <Typography variant="body1" sx={{ fontWeight: 800, color: isCheckedIn ? '#111827' : '#9CA3AF' }}>
-                                    {isCheckedIn ? format(new Date(attendance.entryTime!), 'hh:mm') : '--:--'}
+                                    {isCheckedIn ? formatTime(attendance.entryTime) : '--:--'}
                                 </Typography>
                             </Box>
                             {isCheckedIn && (
@@ -142,7 +143,7 @@ export default function DailyOverviewCard({ overview, loading }: DailyOverviewCa
                             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
                                 <Logout sx={{ fontSize: 20, color: isCheckedOut ? '#10B981' : '#9CA3AF' }} />
                                 <Typography variant="body1" sx={{ fontWeight: 800, color: isCheckedOut ? '#111827' : '#9CA3AF' }}>
-                                    {isCheckedOut ? format(new Date(attendance.exitTime!), 'hh:mm') : '--:--'}
+                                    {isCheckedOut ? formatTime(attendance.exitTime) : '--:--'}
                                 </Typography>
                             </Box>
                             {isCheckedOut && (

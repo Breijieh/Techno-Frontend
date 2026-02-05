@@ -38,6 +38,7 @@ import ApprovalDialog from '@/components/common/ApprovalDialog';
 import { loansApi, type PostponementDetailsResponse } from '@/lib/api/loans';
 import { mapPostponementResponseListToPostponementRequestList, type PostponementRequest } from '@/lib/mappers/postponementMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
+import { formatInvariantDate } from '@/lib/utils/dateFormatter';
 import { TableToolbarWrapper } from '@/components/tables/TableToolbarWrapper';
 
 export default function InstallmentPostponePage() {
@@ -334,7 +335,7 @@ export default function InstallmentPostponePage() {
         header: 'تاريخ الطلب',
         size: 130,
         filterVariant: 'date-range',
-        Cell: ({ cell }) => new Date(cell.getValue<Date>()).toLocaleDateString('en-GB'),
+        Cell: ({ cell }) => formatInvariantDate(cell.getValue<Date>()),
       },
     ],
     [getEmployeeName],
