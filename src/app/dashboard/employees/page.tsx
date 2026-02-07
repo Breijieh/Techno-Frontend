@@ -417,6 +417,23 @@ export default function EmployeesListPage() {
         Cell: ({ cell }) => `ر.س ${formatNumber(cell.getValue<number>())}`,
       },
       {
+        id: 'statusSearchable',
+        header: 'الحالة (بحث)',
+        accessorFn: (row: Employee) => {
+          const labels: Record<string, string> = {
+            ACTIVE: 'نشط',
+            ON_LEAVE: 'في إجازة في اجازة حاليا',
+            INACTIVE: 'غير نشط',
+            TERMINATED: 'منتهي',
+          };
+          return labels[row.status] || row.status;
+        },
+        enableColumnFilter: false,
+        enableHiding: true,
+        muiTableHeadCellProps: { sx: { display: 'none' } },
+        muiTableBodyCellProps: { sx: { display: 'none' } },
+      },
+      {
         accessorKey: 'status',
         header: 'الحالة',
         size: 120,
