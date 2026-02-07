@@ -416,7 +416,7 @@ export default function TransactionTypesPage() {
               variant="h6"
               sx={{ fontWeight: 700, color: '#111827' }}
             >
-              أنواع المعاملات - ملء الشاشة
+              أنواع البدلات والحسميات - ملء الشاشة
             </Typography>
             <Tooltip title="إغلاق ملء الشاشة (ESC)">
               <IconButton
@@ -473,7 +473,7 @@ export default function TransactionTypesPage() {
                   variant="h5"
                   sx={{ fontWeight: 700, color: '#111827', mb: 0.5 }}
                 >
-                  أنواع المعاملات
+                  أنواع البدلات والحسميات
                 </Typography>
                 <Typography sx={{ fontSize: '14px', color: '#6B7280' }}>
                   إدارة أنواع معاملات البدلات والخصومات

@@ -165,7 +165,7 @@ const BASE_SETTINGS_ITEMS: MenuItem[] = [
       { label: 'تقويم العطلات', icon: <CalendarMonth /> },
       { label: 'جداول الوقت', icon: <AccessTime /> },
       { label: 'الموردون', icon: <LocalShipping /> },
-      { label: 'أنواع المعاملات', icon: <ListAlt /> },
+      { label: 'أنواع البدلات والحسميات', icon: <ListAlt /> },
       { label: 'سجلات النظام', icon: <History /> },
       { label: 'بدلات الموظفين', icon: <MonetizationOn /> },
       { label: 'نسب البدلات', icon: <Percent /> },

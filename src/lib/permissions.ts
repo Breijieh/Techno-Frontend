@@ -448,7 +448,7 @@ export const MENU_LABEL_ROUTE_MAP: Record<string, string> = {
   'تقويم العطلات': '/dashboard/settings/holidays',
   'جداول الوقت': '/dashboard/settings/time-schedules',
   'الموردون': '/dashboard/settings/suppliers',
-  'أنواع المعاملات': '/dashboard/settings/transaction-types',
+  'أنواع البدلات والحسميات': '/dashboard/settings/transaction-types',
   'سجلات النظام': '/dashboard/settings/system-logs',
   'بدلات الموظفين': '/dashboard/settings/employee-allowances',
   'نسب البدلات': '/dashboard/settings/allowance-percentages',
