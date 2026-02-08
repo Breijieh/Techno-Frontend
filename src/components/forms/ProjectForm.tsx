@@ -212,12 +212,6 @@ export default function ProjectForm({
 
   // Debug: Log schedule data
   useEffect(() => {
-    if (open) {
-      console.log('[ProjectForm] Schedules loaded:', schedulesData);
-      console.log('[ProjectForm] Schedule options:', scheduleOptions);
-      console.log('[ProjectForm] Initial scheduleId:', initialData?.scheduleId);
-      console.log('[ProjectForm] Form scheduleId:', formData.scheduleId);
-    }
   }, [open, schedulesData, scheduleOptions, initialData?.scheduleId, formData.scheduleId]);
 
   return (

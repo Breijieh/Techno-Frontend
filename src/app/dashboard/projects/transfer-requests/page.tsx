@@ -75,23 +75,17 @@ export default function TransferRequestsPage() {
 
   const employees = useMemo(() => {
     if (!employeesResponse) {
-      console.warn('[TransferRequests] No employees response');
       return [];
     }
     if (!employeesResponse.employees || !Array.isArray(employeesResponse.employees)) {
-      console.warn('[TransferRequests] Invalid employees response:', employeesResponse);
       return [];
     }
     const mapped = employeesResponse.employees.map(mapEmployeeResponseToEmployee);
-    console.log('[TransferRequests] Mapped employees:', mapped.length, mapped);
     return mapped;
   }, [employeesResponse]);
 
   // Debug logging
   useEffect(() => {
-    console.log('[TransferRequests] Projects loading:', projectsLoading, 'Data:', projects?.length || 0, projects);
-    console.log('[TransferRequests] Employees loading:', employeesLoading, 'Data:', employees?.length || 0, employees);
-    console.log('[TransferRequests] Employees response:', employeesResponse);
   }, [projects, employees, projectsLoading, employeesLoading, employeesResponse]);
 
   // Protect route
@@ -180,7 +174,6 @@ export default function TransferRequestsPage() {
       setIsAddModalOpen(false);
       setSelectedRequest(null);
     } catch (error) {
-      console.error('Error saving transfer request:', error);
       throw error;
     }
   };
@@ -213,7 +206,6 @@ export default function TransferRequestsPage() {
       setIsApprovalModalOpen(false);
       setSelectedRequest(null);
     } catch (error) {
-      console.error('Error processing approval:', error);
       throw error;
     }
   };

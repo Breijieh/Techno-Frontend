@@ -10,11 +10,14 @@ export type { DepartmentResponse } from './departments';
 export { contractTypesApi } from './contractTypes';
 export type { ContractTypeResponse } from './contractTypes';
 export { attendanceApi, manualAttendanceRequestApi, attendanceClosureApi } from './attendance';
+export type { AttendanceResponse, EmployeeTimesheet, TimesheetDay, ManualAttendanceRequestResponse, AttendanceDayClosureResponse } from './attendance';
 export { leavesApi } from './leaves';
 export { loansApi } from './loans';
 export { payrollApi } from './payroll';
 export { projectsApi } from './projects';
 export { warehouseApi } from './warehouse';
+export { deductionsApi } from './deductions';
+export type { DeductionDetailsResponse, SubmitDeductionRequest } from './deductions';
 export { notificationsApi } from './notifications';
 export { reportsApi } from './reports';
 export { allowancesApi } from './allowances';
@@ -71,4 +74,3 @@ export { salaryStructureApi, mergeBreakdownsToFrontend, splitFrontendToBackendRe
 export type { SalaryBreakdownResponse, SalaryBreakdownRequest } from './salaryStructure';
 export { specializationsApi } from './specializations';
 export type { SpecializationRequest, SpecializationResponse } from './specializations';
-

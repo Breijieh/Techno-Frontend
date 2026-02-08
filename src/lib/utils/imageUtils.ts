@@ -52,7 +52,6 @@ export const resolveImageUrl = (path: string | null | undefined): string | undef
             normalizedPath = '/' + normalizedPath;
         }
         const finalUrl = `${baseUrl}${normalizedPath}`;
-        console.log(`[ImageUtils] Resolved: ${path} -> ${finalUrl}`);
         return finalUrl;
     }
 
@@ -60,7 +59,6 @@ export const resolveImageUrl = (path: string | null | undefined): string | undef
     // This handles legacy paths that might be stored without the uploads prefix
     if (/^\d{4}\/\d{2}\//.test(normalizedPath)) {
         const finalUrl = `${baseUrl}/uploads/${normalizedPath}`;
-        console.log(`[ImageUtils] Resolved date-path: ${path} -> ${finalUrl}`);
         return finalUrl;
     }
 
@@ -72,6 +70,5 @@ export const resolveImageUrl = (path: string | null | undefined): string | undef
 
     // If it doesn't look like a special path, return the original
     // This handles cases like data:image/... which we already checked above
-    console.log(`[ImageUtils] Passthrough: ${path}`);
     return path;
 };

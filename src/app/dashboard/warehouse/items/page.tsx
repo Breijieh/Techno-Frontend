@@ -101,7 +101,6 @@ export default function WarehouseItemsPage() {
   const { data: storesData = [] } = useApi(
     async () => {
       const stores = await warehouseApi.getAllStores();
-      console.log('[ItemsPage] Fetched stores:', stores);
       return stores;
     },
     { immediate: true }
@@ -172,7 +171,6 @@ export default function WarehouseItemsPage() {
       setSelectedItem(mappedItem);
       setIsViewModalOpen(true);
     } catch (error) {
-      console.error('Error fetching item details:', error);
       // Fallback to using the item from the list (should already have backend fields)
       setSelectedItem(item);
       setIsViewModalOpen(true);
@@ -199,7 +197,6 @@ export default function WarehouseItemsPage() {
       setSelectedItem(mappedItem);
       setIsEditModalOpen(true);
     } catch (error) {
-      console.error('Error fetching item details:', error);
       // Fallback to using the item from the list (should already have backend fields)
       setSelectedItem(item);
       setIsEditModalOpen(true);
@@ -331,14 +328,9 @@ export default function WarehouseItemsPage() {
         }
         itemRequest.initialQuantity = initialQuantity;
         itemRequest.storeCode = storeCode;
-        console.log('[ItemForm] Sending initial quantity:', initialQuantity, 'to store:', storeCode);
       } else if (isEdit && initialQuantity > 0) {
-        console.log('[ItemForm] Ignoring quantity/store fields during edit - use Goods Receipt/Issue to modify stock');
       } else {
-        console.log('[ItemForm] No initial quantity provided or quantity is 0');
       }
-
-      console.log('[ItemForm] Item request payload:', itemRequest);
 
       await saveItem({
         isEdit: !!selectedItem,
@@ -346,7 +338,6 @@ export default function WarehouseItemsPage() {
         itemRequest,
       });
     } catch (error) {
-      console.error('Error saving item:', error);
       // Error is already handled by useApiWithToast
     }
   };

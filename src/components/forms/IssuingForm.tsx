@@ -116,7 +116,6 @@ export default function IssuingForm({
   // Auto-fill "Requested By" with current user when creating new issue
   useEffect(() => {
     if (!isEdit && currentEmployeeData && currentEmployeeData.employeeNo && formData.requestedBy === 0) {
-      console.log('[IssuingForm] Auto-filling requestedBy with current user:', currentEmployeeData.employeeNo);
       setTimeout(() => {
         setFormData((prev) => ({
           ...prev,
@@ -154,7 +153,6 @@ export default function IssuingForm({
             }
           });
           setOriginalQuantities(originalQtyMap);
-          console.log('[IssuingForm] Stored original quantities for edit mode:', originalQtyMap);
         } else {
           setIssueLines([]);
           setOriginalQuantities(new Map());
@@ -195,7 +193,6 @@ export default function IssuingForm({
         setTimeout(() => {
           setFormData((prev) => {
             if (prev.storeCode !== (initialData as StoreItemPayable).storeCode) {
-              console.log('[IssuingForm] Setting storeCode from initialData:', (initialData as StoreItemPayable).storeCode);
               return { ...prev, storeCode: (initialData as StoreItemPayable).storeCode };
             }
             return prev;

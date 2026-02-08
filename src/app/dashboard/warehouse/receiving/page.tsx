@@ -230,17 +230,13 @@ export default function ReceivingPage() {
       setSelectedReceiving(receivable);
       setIsViewModalOpen(true);
     } catch (error) {
-      console.error('Error fetching receipt details:', error);
       toast.showError('فشل تحميل تفاصيل الاستلام');
     }
   };
 
   const handleEdit = async (transaction: ReceivingTransaction) => {
-    console.log('[ReceivingPage] handleEdit called with transaction:', transaction);
     try {
-      console.log('[ReceivingPage] Fetching receipt details for ID:', transaction.receiptNo);
       const receipt = await warehouseApi.getGoodsReceiptById(transaction.receiptNo);
-      console.log('[ReceivingPage] Receipt received:', receipt);
 
       // Convert GoodsReceiptResponse to StoreItemReceivable for editing
       const receivable: StoreItemReceivable & { receiptLines?: Array<{ itemCode: number; quantity: number; notes?: string }> } = {
@@ -261,13 +257,9 @@ export default function ReceivingPage() {
           notes: line.notes || '',
         })) || [],
       };
-      console.log('[ReceivingPage] Mapped receivable:', receivable);
-      console.log('[ReceivingPage] Receipt lines count:', receivable.receiptLines?.length || 0);
       setSelectedReceiving(receivable);
       setIsEditModalOpen(true);
-      console.log('[ReceivingPage] Edit modal opened');
     } catch (error) {
-      console.error('[ReceivingPage] Error fetching receipt details:', error);
       toast.showError('فشل تحميل تفاصيل الاستلام');
     }
   };
@@ -291,9 +283,6 @@ export default function ReceivingPage() {
   };
 
   const handleSubmit = async (data: Partial<StoreItemReceivable> & { receiptLines?: Array<{ itemCode: number; quantity: number; notes?: string }> }) => {
-    console.log('[ReceivingPage] handleSubmit called with data:', data);
-    console.log('[ReceivingPage] selectedReceiving:', selectedReceiving);
-
     try {
       // Map form data to GoodsReceiptRequest
       let receiptLines: Array<{ itemCode: number; quantity: number; notes?: string }> = [];
@@ -301,22 +290,18 @@ export default function ReceivingPage() {
       // If receiptLines are provided from form, use them (for both create and edit)
       if (data.receiptLines && data.receiptLines.length > 0) {
         receiptLines = data.receiptLines;
-        console.log('[ReceivingPage] Using receipt lines from form:', receiptLines);
       }
       // If PO is provided and no receipt lines, fetch PO and create receipt lines from PO (only for new receipts)
       else if (data.itemsPOTransactionNo && !selectedReceiving) {
         try {
-          console.log('[ReceivingPage] Fetching PO details for ID:', data.itemsPOTransactionNo);
           const po = await warehouseApi.getPurchaseOrderById(data.itemsPOTransactionNo);
           receiptLines = po.orderLines.map(line => ({
             itemCode: line.itemCode,
             quantity: line.quantity,
             notes: line.notes || '',
           }));
-          console.log('[ReceivingPage] Created receipt lines from PO:', receiptLines);
         } catch (error) {
-          console.error('[ReceivingPage] Error fetching PO details:', error);
-          toast.showError('فشل جلب تفاصيل أمر الشراء');
+          toast.showError('فشل جلب تفاصيل أمر شراء');
           return;
         }
       } else {
@@ -334,28 +319,18 @@ export default function ReceivingPage() {
         receiptLines,
       };
 
-      console.log('[ReceivingPage] Final request with purchaseOrderId:', request.purchaseOrderId);
-
-      console.log('[ReceivingPage] Mapped request:', request);
-      console.log('[ReceivingPage] Is edit mode?', !!(selectedReceiving && selectedReceiving.transactionNo));
-
       if (selectedReceiving && selectedReceiving.transactionNo) {
         // Edit mode
-        console.log('[ReceivingPage] Updating receipt with ID:', selectedReceiving.transactionNo);
         await updateReceipt.execute({ id: selectedReceiving.transactionNo, request });
-        console.log('[ReceivingPage] Update successful');
         setIsEditModalOpen(false);
       } else {
         // Add mode
-        console.log('[ReceivingPage] Creating new receipt');
         await createReceipt.execute(request);
-        console.log('[ReceivingPage] Create successful');
         setIsAddModalOpen(false);
       }
       setSelectedReceiving(null);
       await refetchReceipts();
     } catch (error) {
-      console.error('[ReceivingPage] Error saving goods receipt:', error);
       throw error; // Re-throw so form can handle it
     }
   };
@@ -368,7 +343,6 @@ export default function ReceivingPage() {
       setSelectedReceiving(null);
       await refetchReceipts();
     } catch (error) {
-      console.error('Error deleting goods receipt:', error);
     }
   };
 

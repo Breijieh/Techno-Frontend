@@ -148,17 +148,14 @@ export const projectsApi = {
     try {
       // Backend returns ApiResponse<List<ProjectSummary>>, but apiClient unwraps it automatically
       const response = await apiClient.get<ProjectSummary[]>('/projects/active');
-      console.log('[getActiveProjects] Response:', response);
 
       // Ensure we return an array
       if (Array.isArray(response)) {
         return response;
       }
       // If response is not an array, it might be wrapped incorrectly
-      console.warn('[getActiveProjects] Response is not an array:', response);
       return [];
     } catch (error) {
-      console.error('[getActiveProjects] Error:', error);
       return [];
     }
   },
@@ -266,7 +263,6 @@ export const projectsApi = {
       ...(request.attachmentPath && { attachmentPath: request.attachmentPath }),
     };
 
-    console.log('[API] createPaymentRequest request:', backendRequest);
 
     try {
       const { mapPaymentRequestResponseToProjectPaymentRequest } = await import('@/lib/mappers/paymentRequestMapper');
@@ -275,10 +271,8 @@ export const projectsApi = {
         backendRequest
       );
 
-      console.log('[API] createPaymentRequest response:', response);
       return mapPaymentRequestResponseToProjectPaymentRequest(response);
     } catch (error: unknown) {
-      console.error('[API] createPaymentRequest error:', error);
       throw error;
     }
   },
@@ -346,10 +340,8 @@ export const projectsApi = {
         return response;
       }
       // If response is not an array, it might be wrapped or have a different structure
-      console.warn(`[API] getProjectPayments(${projectCode}) response is not an array:`, response);
       return [];
     } catch (error: unknown) {
-      console.error(`[API] getProjectPayments(${projectCode}) error:`, error);
       throw error; // Re-throw to let caller handle
     }
   },
@@ -378,14 +370,12 @@ export const projectsApi = {
       ...(data.notes && { notes: data.notes }), // Only include if provided
     };
 
-    console.log('[API] addPaymentSchedule request:', requestBody);
 
     const response = await apiClient.post<ProjectDuePayment>(
       `/projects/${projectCode}/payments`,
       requestBody
     );
 
-    console.log('[API] addPaymentSchedule response:', response);
     return response;
   },
 
@@ -458,11 +448,9 @@ export const projectsApi = {
         const allRequestsResponse = await apiClient.get<BackendPaymentRequestResponse[]>('/payment-requests/all').catch(() => null);
 
         if (allRequestsResponse && Array.isArray(allRequestsResponse)) {
-          console.log('[getAllPaymentRequests] Fetched all requests via /all endpoint:', allRequestsResponse.length);
           return mapPaymentRequestResponseArray(allRequestsResponse);
         }
       } catch {
-        console.log('[getAllPaymentRequests] /all endpoint not available, falling back to combined fetch');
       }
 
       // Fallback: Get all by fetching from multiple endpoints
@@ -510,15 +498,12 @@ export const projectsApi = {
             });
           }
         } catch {
-          console.warn('[getAllPaymentRequests] Error fetching project requests');
           // Continue with what we have
         }
 
         const allRequests = Array.from(allRequestsMap.values());
-        console.log('[getAllPaymentRequests] Total requests found:', allRequests.length);
         return mapPaymentRequestResponseArray(allRequests);
       } catch {
-        console.error('[getAllPaymentRequests] Error');
         return [];
       }
     }
@@ -681,7 +666,6 @@ export const projectsApi = {
 
         return [];
       } catch {
-        console.error('[getAllTransferRequests] Error fetching all transfers');
 
         // Fallback to old method if new endpoint fails
         // Get all by combining pending and approved-pending
@@ -772,7 +756,6 @@ export const projectsApi = {
       transferReason: request.reason || '',
     };
 
-    console.log('[createTransferRequest] Sending request to /transfers:', backendRequest);
 
     try {
       // apiClient.post automatically unwraps ApiResponse, so we get TransferResponse directly
@@ -782,21 +765,10 @@ export const projectsApi = {
         backendRequest
       );
 
-      console.log('[createTransferRequest] Received response:', response);
 
       return mapToTransferRequest(response);
     } catch (error: unknown) {
-      // Log full error details for debugging
       const apiError = error as { message?: string; status?: number; errors?: Record<string, string[]> };
-      console.error('[createTransferRequest] Full error object:', error);
-      console.error('[createTransferRequest] Error details:', {
-        message: apiError.message,
-        status: apiError.status,
-        errors: apiError.errors,
-        endpoint: '/transfers',
-        fullUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'}/transfers`,
-        request: backendRequest,
-      });
 
       // Provide more helpful error messages
       if (apiError.status === 404) {

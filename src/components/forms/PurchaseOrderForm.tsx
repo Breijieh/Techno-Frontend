@@ -85,46 +85,20 @@ export default function PurchaseOrderForm({
 
   // Log supplier fetch status
   useEffect(() => {
-    if (suppliersError) {
-      console.error('[PurchaseOrderForm] Error fetching suppliers:', suppliersError);
-    }
-    if (suppliersData) {
-      console.log('[PurchaseOrderForm] Suppliers data received:', suppliersData);
-    }
   }, [suppliersData, suppliersError]);
 
   const items = itemsData || [];
   const suppliers = useMemo(() => {
     if (!suppliersData) {
-      console.log('[PurchaseOrderForm] No suppliers data received');
       return [];
     }
     // API client already unwraps ApiResponse, so suppliersData should be the array directly
     const suppliersList = Array.isArray(suppliersData) ? suppliersData : [];
-    const activeSuppliers = suppliersList.filter((s: SupplierResponse) => s.isActive !== false);
-    console.log('[PurchaseOrderForm] Suppliers loaded:', {
-      total: suppliersList.length,
-      active: activeSuppliers.length,
-      all: suppliersList
-    });
     return suppliersList; // Return all, filter in the dropdown
   }, [suppliersData]);
 
   useEffect(() => {
-    console.log('[PurchaseOrderForm] useEffect triggered, open:', open, 'initialData:', initialData);
-
     if (initialData) {
-      console.log('[PurchaseOrderForm] Setting up form for edit mode');
-      console.log('[PurchaseOrderForm] Initial data received:', {
-        transactionDate: initialData.transactionDate,
-        storeCode: initialData.storeCode,
-        supplierName: initialData.supplierName,
-        expectedDeliveryDate: initialData.expectedDeliveryDate,
-        orderLines: initialData.orderLines,
-
-        orderLinesCount: initialData.orderLines ? (Array.isArray(initialData.orderLines) ? initialData.orderLines.length : 'not array') : 'null/undefined'
-      });
-
       // Find supplier by name if supplierName is provided
       let supplierId: number | undefined = initialData.supplierId;
       if (!supplierId && initialData.supplierName && suppliers.length > 0) {
@@ -134,9 +108,6 @@ export default function PurchaseOrderForm({
         );
         if (foundSupplier) {
           supplierId = foundSupplier.supplierId;
-          console.log('[PurchaseOrderForm] Found supplier by name:', initialData.supplierName, 'ID:', supplierId);
-        } else {
-          console.log('[PurchaseOrderForm] Supplier not found by name:', initialData.supplierName, 'Available suppliers:', suppliers.map(s => s.supplierName));
         }
       }
 
@@ -154,21 +125,14 @@ export default function PurchaseOrderForm({
 
         // Load existing order lines if editing
         if (initialData.orderLines && Array.isArray(initialData.orderLines)) {
-          console.log('[PurchaseOrderForm] Loading order lines:', initialData.orderLines);
           const mappedLines = initialData.orderLines.map((line) => ({
             itemCode: line.itemCode,
             quantity: line.quantity || 0,
             unitPrice: line.unitPrice || (line.lineTotal && line.quantity ? line.lineTotal / line.quantity : 0),
             notes: line.notes || '',
           }));
-          console.log('[PurchaseOrderForm] Mapped order lines:', mappedLines);
           setOrderLines(mappedLines);
         } else {
-          console.warn('[PurchaseOrderForm] No order lines found in initialData:', {
-            hasOrderLines: !!initialData.orderLines,
-            isArray: Array.isArray(initialData.orderLines),
-            orderLines: initialData.orderLines
-          });
           setOrderLines([]);
         }
         setErrors({});
@@ -238,12 +202,7 @@ export default function PurchaseOrderForm({
   };
 
   const handleSubmit = async () => {
-    console.log('[PurchaseOrderForm] handleSubmit called, isEdit:', isEdit, 'initialData:', initialData);
-    console.log('[PurchaseOrderForm] Form data:', formData);
-    console.log('[PurchaseOrderForm] Order lines:', orderLines);
-
     if (!validate()) {
-      console.log('[PurchaseOrderForm] Validation failed');
       return;
     }
 
@@ -253,7 +212,6 @@ export default function PurchaseOrderForm({
       const selectedSupplier = suppliers.find((s: SupplierResponse) => s.supplierId === formData.supplierId);
       if (selectedSupplier) {
         finalSupplierName = selectedSupplier.supplierName;
-        console.log('[PurchaseOrderForm] Selected supplier:', selectedSupplier);
       }
     }
 
@@ -264,13 +222,9 @@ export default function PurchaseOrderForm({
       orderLines
     };
 
-    console.log('[PurchaseOrderForm] Submitting data:', submitData);
-
     try {
       await onSubmit(submitData);
-      console.log('[PurchaseOrderForm] Submit successful');
     } catch (error) {
-      console.error('[PurchaseOrderForm] Submit error:', error);
       throw error;
     }
   };

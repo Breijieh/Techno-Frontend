@@ -188,7 +188,6 @@ export default function AttendanceCheckIn() {
                 if (!projectCode) {
                     try {
                         const assignments = await laborApi.getEmployeeAssignments(employee.employeeNo);
-                        console.log('Fetched assignments:', assignments);
 
                         const activeAssignment = assignments.find(
                             (a: any) => {
@@ -211,12 +210,8 @@ export default function AttendanceCheckIn() {
 
                         if (activeAssignment) {
                             projectCode = activeAssignment.projectCode;
-                            console.log('Found active labor assignment:', activeAssignment);
-                        } else {
-                            console.warn('No active assignment found in list:', assignments);
                         }
                     } catch (assignErr) {
-                        console.error('Error fetching labor assignments:', assignErr);
                     }
                 }
 
@@ -226,13 +221,8 @@ export default function AttendanceCheckIn() {
                         const currentUser = await authApi.getCurrentUser();
                         if (currentUser && currentUser.projectCode) {
                             projectCode = currentUser.projectCode;
-                            console.log('Project found from user account settings:', {
-                                projectCode,
-                                userType: currentUser.userType
-                            });
                         }
                     } catch (authErr) {
-                        console.warn('Could not check user account for project assignment:', authErr);
                     }
                 }
 
@@ -246,39 +236,22 @@ export default function AttendanceCheckIn() {
                             if (isProjectActive) {
                                 setProject(proj);
                                 setProjectError(null);
-                                console.log('Project loaded and active:', proj.projectCode);
                             } else {
                                 const currentStatusAr = proj.projectStatusDisplay || status || 'غير نشط';
                                 setProjectError(`المشروع المخصص لك (${proj.projectName}) غير نشط حالياً. الحالة: ${currentStatusAr}`);
-                                console.warn(`Project ${projectCode} is not active. Status: ${status}`);
                             }
                         } else {
                             setProjectError(`المشروع برقم ${projectCode} غير موجود`);
                         }
                     } catch (projErr) {
-                        console.error(`Failed to load project ${projectCode}:`, projErr);
-                        // Log detailed error for debugging
                         if (projErr instanceof Error) {
                             const errorMsg = projErr.message.includes('تم رفض الوصول')
                                 ? 'لا توجد صلاحية لعرض تفاصيل المشروع'
                                 : `فشل تحميل المشروع: ${projErr.message}`;
                             setProjectError(errorMsg);
-                            console.error('Project fetch error details:', {
-                                message: projErr.message,
-                                stack: projErr.stack,
-                                employeeNo: employee.employeeNo,
-                                primaryProjectCode: employee.primaryProjectCode
-                            });
                         }
-                        // Don't set project on error - will show "no project" message
                     }
                 } else {
-                    console.warn('Employee has no project assignment. Employee data:', {
-                        employeeNo: employee.employeeNo,
-                        employeeName: employee.employeeName,
-                        primaryDeptCode: employee.primaryDeptCode,
-                        primaryProjectCode: employee.primaryProjectCode
-                    });
                     setProjectError(null);
                 }
 
@@ -316,7 +289,6 @@ export default function AttendanceCheckIn() {
                         setWorkEndTime(schedule.scheduledEndTime.substring(0, 5));
                     }
                 } catch (schedErr) {
-                    console.error('Failed to load schedule:', schedErr);
                     // Fallback to defaults
                 }
 
@@ -325,7 +297,6 @@ export default function AttendanceCheckIn() {
                 setTodayAttendance(attendance);
 
             } catch (err) {
-                console.error('Failed to load attendance data:', err);
             } finally {
                 setLoadingInitial(false);
             }
@@ -350,7 +321,6 @@ export default function AttendanceCheckIn() {
                 setGeoError(null);
             },
             (error) => {
-                console.error('Geolocation error:', error);
                 // User denied or error
                 if (error.code === error.PERMISSION_DENIED) {
                     setGeoError('يرجى تفعيل خدمة الموقع (GPS) لتسجيل الحضور.');

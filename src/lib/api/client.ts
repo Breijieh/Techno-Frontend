@@ -64,12 +64,10 @@ export class ApiClient {
       sessionStorage.setItem('refreshToken', cleanRefreshToken);
     }
 
-    // Debug logging
-    console.debug('Tokens stored successfully:', {
-      storage: rememberMe ? 'localStorage' : 'sessionStorage',
-      accessTokenLength: cleanAccessToken.length,
-      refreshTokenLength: cleanRefreshToken.length,
-    });
+    if (rememberMe) {
+      sessionStorage.setItem('accessToken', cleanAccessToken);
+      sessionStorage.setItem('refreshToken', cleanRefreshToken);
+    }
   }
 
   /**
@@ -131,7 +129,6 @@ export class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    console.log(`[ApiClient] Making ${options.method || 'GET'} request to: ${url}`);
     const token = this.getToken();
 
     const headers = new Headers(options.headers);
@@ -150,16 +147,10 @@ export class ApiClient {
       // Remove ALL whitespace - JWT tokens must not contain any whitespace
       const cleanToken = token.replace(/\s+/g, '');
       headers.set('Authorization', `Bearer ${cleanToken}`);
-      // Debug logging for token presence
-      if (endpoint === '/auth/me') {
-        console.debug('Sending request to /auth/me with token:', cleanToken.substring(0, 20) + '...');
-      }
     } else {
       // Log warning if no token for authenticated endpoints
       if (endpoint !== '/auth/login' && endpoint !== '/auth/register' && endpoint !== '/auth/refresh') {
         console.warn(`No token available for request to ${endpoint}`);
-        console.debug('Token check - localStorage:', localStorage.getItem('accessToken') ? 'exists' : 'missing');
-        console.debug('Token check - sessionStorage:', sessionStorage.getItem('accessToken') ? 'exists' : 'missing');
       }
     }
 
@@ -181,10 +172,8 @@ export class ApiClient {
 
     // If 401, try to refresh token and retry once
     if (response.status === 401 && token) {
-      console.debug('Received 401, attempting token refresh...');
       const newToken = await this.refreshAccessToken();
       if (newToken) {
-        console.debug('Token refreshed successfully, retrying request');
         headers.set('Authorization', `Bearer ${newToken}`);
         response = await fetch(url, {
           ...options,
@@ -193,7 +182,6 @@ export class ApiClient {
       } else {
         // For /auth/me endpoint, don't throw error - let component use fallback
         if (endpoint === '/auth/me') {
-          console.debug('Token refresh failed for /auth/me, throwing error for component to handle fallback');
           // Throw a specific error that the component can catch and handle
           throw new ApiError(translations.errors.unableToFetchUserInfo, 401);
         }
@@ -209,7 +197,6 @@ export class ApiClient {
 
     // If still 401 after refresh attempt, handle it
     if (response.status === 401 && endpoint === '/auth/me') {
-      console.debug('Still 401 after refresh attempt for /auth/me, component will use fallback');
       throw new ApiError(translations.errors.unableToFetchUserInfo, 401);
     }
 

@@ -205,41 +205,24 @@ export default function PurchaseOrdersPage() {
       setSelectedPO(mapPurchaseOrderResponseToItemPO(fullPO));
       setIsViewModalOpen(true);
     } catch (error) {
-      console.error('Error fetching purchase order details:', error);
       toast.showError('فشل تحميل تفاصيل أمر الشراء');
     }
   };
 
   const handleEdit = async (po: PurchaseOrder) => {
-    console.log('[PurchaseOrdersPage] handleEdit called with PO:', {
-      poId: po.poId,
-      transactionNo: po.transactionNo,
-      poStatus: po.poStatus,
-      requestStatus: po.requestStatus,
-      fullPO: po
-    });
-
-    // Check both poStatus (backend) and requestStatus (mapped) for compatibility
     const status = po.poStatus || (po.requestStatus === 'NEW' ? 'DRAFT' : null);
-    console.log('[PurchaseOrdersPage] Resolved status:', status);
 
     // Only allow editing if status is DRAFT
     if (status !== 'DRAFT') {
-      console.warn('[PurchaseOrdersPage] Edit blocked - status is not DRAFT:', status);
       toast.showWarning(`يمكن تعديل أوامر الشراء في حالة المسودة فقط. الحالة الحالية: ${status || po.requestStatus || 'غير معروف'}`);
       return;
     }
     try {
-      console.log('[PurchaseOrdersPage] Fetching full PO details for ID:', po.poId || po.transactionNo);
       const fullPO = await warehouseApi.getPurchaseOrderById(po.poId || po.transactionNo);
-      console.log('[PurchaseOrdersPage] Full PO received:', fullPO);
       const mappedPO = mapPurchaseOrderResponseToItemPO(fullPO);
-      console.log('[PurchaseOrdersPage] Mapped PO:', mappedPO);
       setSelectedPO(mappedPO);
       setIsEditModalOpen(true);
-      console.log('[PurchaseOrdersPage] Edit modal opened');
     } catch (error) {
-      console.error('[PurchaseOrdersPage] Error fetching purchase order details:', error);
       toast.showError('فشل تحميل تفاصيل أمر الشراء');
     }
   };
@@ -260,9 +243,6 @@ export default function PurchaseOrdersPage() {
   };
 
   const handleSubmit = async (data: Partial<PurchaseOrder>) => {
-    console.log('[PurchaseOrdersPage] handleSubmit called with data:', data);
-    console.log('[PurchaseOrdersPage] selectedPO:', selectedPO);
-
     try {
       // Map form data to backend request
       const request: PurchaseOrderRequest = {
@@ -279,26 +259,18 @@ export default function PurchaseOrdersPage() {
         approvalNotes: data.approvalNotes,
       };
 
-      console.log('[PurchaseOrdersPage] Mapped request:', request);
-      console.log('[PurchaseOrdersPage] Is edit mode?', !!(selectedPO && selectedPO.poId));
-
       if (selectedPO && selectedPO.poId) {
         // Edit mode
-        console.log('[PurchaseOrdersPage] Updating PO with ID:', selectedPO.poId);
         await updatePO.execute(selectedPO.poId, request);
-        console.log('[PurchaseOrdersPage] Update successful');
         setIsEditModalOpen(false);
       } else {
         // Add mode
-        console.log('[PurchaseOrdersPage] Creating new PO');
         await createPO.execute(request);
-        console.log('[PurchaseOrdersPage] Create successful');
         setIsAddModalOpen(false);
       }
       setSelectedPO(null);
       await refetchPOs();
     } catch (error) {
-      console.error('[PurchaseOrdersPage] Error saving purchase order:', error);
       throw error; // Re-throw so form can handle it
     }
   };
@@ -312,7 +284,6 @@ export default function PurchaseOrdersPage() {
       setSelectedPO(null);
       await refetchPOs();
     } catch (error) {
-      console.error('Error deleting purchase order:', error);
     }
   };
 
@@ -332,7 +303,6 @@ export default function PurchaseOrdersPage() {
       setApprovalNotes('');
       await refetchPOs();
     } catch (error) {
-      console.error('Error approving purchase order:', error);
     }
   };
 
@@ -356,7 +326,6 @@ export default function PurchaseOrdersPage() {
       setApprovalNotes('');
       await refetchPOs();
     } catch (error) {
-      console.error('Error rejecting purchase order:', error);
     }
   };
 
@@ -366,7 +335,6 @@ export default function PurchaseOrdersPage() {
       await submitPO.execute(poId);
       await refetchPOs();
     } catch (error) {
-      console.error('Error submitting purchase order for approval:', error);
     }
   };
 

@@ -55,15 +55,11 @@ export default function PaymentRequestForm({
     if (!suppliersResponse) return [];
     // Handle both array and object with data property
     const suppliersList = Array.isArray(suppliersResponse) ? suppliersResponse : (suppliersResponse as { data: Supplier[] })?.data || [];
-    console.log('[PaymentRequestForm] Suppliers response:', suppliersResponse, 'Parsed:', suppliersList);
     return suppliersList;
   }, [suppliersResponse]);
 
   // Log error if suppliers fetch fails
   useEffect(() => {
-    if (suppliersError) {
-      console.error('[PaymentRequestForm] Error fetching suppliers:', suppliersError);
-    }
   }, [suppliersError]);
 
   const [formData, setFormData] = useState<Partial<ProjectPaymentRequest>>({
@@ -167,7 +163,6 @@ export default function PaymentRequestForm({
 
   const projectOptions = useMemo(() => {
     const projectsList = projects || [];
-    console.log('[PaymentRequestForm] Projects:', projectsList);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return projectsList.map((proj: any) => ({
       value: proj.projectCode,
@@ -177,21 +172,16 @@ export default function PaymentRequestForm({
 
   const supplierOptions = useMemo(() => {
     const suppliersList = suppliers || [];
-    console.log('[PaymentRequestForm] Suppliers:', suppliersList);
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     const options = suppliersList.map((supplier: any) => ({
       value: supplier.supplierId.toString(),
-      label: supplier.supplierName || supplier.supplierName || `Supplier #${supplier.supplierId}`,
+      label: supplier.supplierName || `Supplier #${supplier.supplierId}`,
     }));
-    console.log('[PaymentRequestForm] Supplier Options:', options);
     return options;
   }, [suppliers]);
 
   // Debug: Log when suppliers or options change
   useEffect(() => {
-    console.log('[PaymentRequestForm] Suppliers changed:', suppliers);
-    console.log('[PaymentRequestForm] Supplier options count:', supplierOptions.length);
-    console.log('[PaymentRequestForm] Loading suppliers:', loadingSuppliers);
   }, [suppliers, supplierOptions, loadingSuppliers]);
 
   return (
@@ -264,15 +254,13 @@ export default function PaymentRequestForm({
                 label="المورد"
                 value={formData.supplierCode || ''}
                 onChange={(val: string | number) => {
-                  console.log('[PaymentRequestForm] Supplier selected:', val);
                   setFormData({ ...formData, supplierCode: (val === '' ? 0 : val) as number });
                 }}
                 options={(() => {
                   const allOptions = [
                     { value: '', label: loadingSuppliers ? 'جارٍ التحميل...' : 'اختر المورد' },
-                    ...supplierOptions
+                    ...supplierOptions,
                   ];
-                  console.log('[PaymentRequestForm] All supplier options passed to AnimatedSelect:', allOptions);
                   return allOptions;
                 })()}
                 error={!!errors.supplierCode}

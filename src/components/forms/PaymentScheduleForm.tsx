@@ -153,7 +153,6 @@ export default function PaymentScheduleForm({
           }
         } catch (error) {
           // If we can't fetch existing payments, just validate against project total
-          console.log('Could not fetch existing payments for validation:', error);
         }
       }
     }
@@ -202,7 +201,6 @@ export default function PaymentScheduleForm({
           }
         } catch (error) {
           // If error fetching, keep current value or default to 1
-          console.log('Could not fetch existing payments, using default sequence:', error);
           if (formData.sequenceNo !== 1) {
             setFormData(prev => ({ ...prev, sequenceNo: 1 }));
           }

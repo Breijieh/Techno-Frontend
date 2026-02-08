@@ -197,7 +197,6 @@ export default function TransferForm({
   // Auto-fill "Requested By" with current user when creating new transfer
   useEffect(() => {
     if (!isEdit && currentEmployeeData && currentEmployeeData.employeeNo && formData.requestedBy === 0) {
-      console.log('[TransferForm] Auto-filling requestedBy with current user:', currentEmployeeData.employeeNo);
       setFormData((prev) => ({
         ...prev,
         requestedBy: currentEmployeeData.employeeNo,

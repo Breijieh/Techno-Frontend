@@ -81,7 +81,6 @@ export default function ManualAttendancePage() {
             name: e.employeeName || e.employeeName || `موظف ${e.employeeNo}`
           })));
         } catch (error) {
-          console.error('Failed to load employees:', error);
         } finally {
           setLoadingFilters(false);
         }
@@ -168,9 +167,7 @@ export default function ManualAttendancePage() {
 
         const response = await manualAttendanceRequestApi.getAllManualAttendanceRequests(params);
 
-        // Handle undefined or invalid response
         if (!response) {
-          console.warn('No response from API - this might indicate the endpoint is not available');
           setRequests([]);
           setRequestResponses([]);
           setTotalElements(0);
@@ -188,7 +185,6 @@ export default function ManualAttendancePage() {
 
         return response;
       } catch (error) {
-        console.error('Error fetching manual attendance requests:', error);
         setRequests([]);
         setRequestResponses([]);
         setTotalElements(0);

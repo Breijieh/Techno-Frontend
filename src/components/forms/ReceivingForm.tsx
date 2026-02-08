@@ -94,7 +94,6 @@ export default function ReceivingForm({
   // Auto-fill "Requested By" with current user when creating new receipt
   useEffect(() => {
     if (!isEdit && currentEmployeeData && currentEmployeeData.employeeNo && formData.requestedBy === 0) {
-      console.log('[ReceivingForm] Auto-filling requestedBy with current user:', currentEmployeeData.employeeNo);
       setFormData((prev) => ({
         ...prev,
         requestedBy: currentEmployeeData.employeeNo,
@@ -103,20 +102,7 @@ export default function ReceivingForm({
   }, [isEdit, currentEmployeeData, formData.requestedBy]);
 
   useEffect(() => {
-    console.log('[ReceivingForm] useEffect triggered, open:', open, 'initialData:', initialData);
-
     if (initialData) {
-      console.log('[ReceivingForm] Setting up form for edit mode');
-      console.log('[ReceivingForm] Initial data:', {
-        transactionDate: initialData.transactionDate,
-        projectCode: initialData.projectCode,
-        storeCode: initialData.storeCode,
-        itemsPOTransactionNo: initialData.itemsPOTransactionNo,
-        requestedBy: initialData.requestedBy,
-        receiptLines: (initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines,
-        receiptLinesCount: (initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines ? (Array.isArray((initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines) ? (initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines.length : 'not array') : 'null/undefined'
-      });
-
       setFormData({
         transactionDate: initialData.transactionDate ? new Date(initialData.transactionDate) : new Date(),
         projectCode: initialData.projectCode || 0,
@@ -127,16 +113,13 @@ export default function ReceivingForm({
       });
 
       if ((initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines && Array.isArray((initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines)) {
-        console.log('[ReceivingForm] Loading receipt lines:', (initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines);
         const mappedLines = (initialData as StoreItemReceivable & { receiptLines: GoodsReceiptLineRequest[] }).receiptLines.map((line: GoodsReceiptLineRequest) => ({
           itemCode: line.itemCode,
           quantity: line.quantity || 0,
           notes: line.notes || '',
         }));
-        console.log('[ReceivingForm] Mapped receipt lines:', mappedLines);
         setReceiptLines(mappedLines);
       } else {
-        console.warn('[ReceivingForm] No receipt lines found in initialData');
         setReceiptLines([]);
       }
     } else {
@@ -191,13 +174,10 @@ export default function ReceivingForm({
           // Only update if it's different to avoid infinite loops
           setFormData((prev) => {
             if (prev.storeCode !== initialData.storeCode) {
-              console.log('[ReceivingForm] Setting storeCode from initialData:', initialData.storeCode);
               return { ...prev, storeCode: initialData.storeCode };
             }
             return prev;
           });
-        } else {
-          console.warn('[ReceivingForm] Store code from initialData not found in available stores:', initialData.storeCode, 'Available stores:', projectStores);
         }
       } else if (projectStores.length === 0) {
         // No stores available for this project
@@ -222,7 +202,6 @@ export default function ReceivingForm({
   // Fetch linked PO immediately when editing
   useEffect(() => {
     if (linkedPOId && linkedPOId > 0) {
-      console.log('[ReceivingForm] Fetching linked PO with ID:', linkedPOId);
       fetchLinkedPO();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -251,7 +230,6 @@ export default function ReceivingForm({
           value: linkedPOData.poId,
           label: `${linkedPOData.poNumber} - ${linkedPOData.supplierName} (Total: ${linkedPOData.totalAmount || 0})${linkedPOData.poStatus !== 'APPROVED' ? ` [${linkedPOData.poStatus}]` : ''}`,
         });
-        console.log('[ReceivingForm] Added linked PO to available POs:', linkedPOData.poId, linkedPOData.poStatus);
       }
     }
 
@@ -264,7 +242,6 @@ export default function ReceivingForm({
         // Only update if it's different to avoid infinite loops
         setFormData((prev) => {
           if (prev.itemsPOTransactionNo !== initialData.itemsPOTransactionNo) {
-            console.log('[ReceivingForm] Setting itemsPOTransactionNo from initialData:', initialData.itemsPOTransactionNo);
             return { ...prev, itemsPOTransactionNo: initialData.itemsPOTransactionNo };
           }
           return prev;
@@ -273,13 +250,10 @@ export default function ReceivingForm({
         // Linked PO data is available but not yet in the list - set it directly
         setFormData((prev) => {
           if (prev.itemsPOTransactionNo !== linkedPOData.poId) {
-            console.log('[ReceivingForm] Setting itemsPOTransactionNo from linkedPOData (direct):', linkedPOData.poId);
             return { ...prev, itemsPOTransactionNo: linkedPOData.poId };
           }
           return prev;
         });
-      } else {
-        console.warn('[ReceivingForm] PO ID from initialData not found in available POs:', initialData.itemsPOTransactionNo, 'Available POs:', finalPOs, linkedPOData ? 'Linked PO data available' : 'Waiting for linked PO data');
       }
     }
   }, [purchaseOrdersData, linkedPOData, initialData, isEdit]);
@@ -364,21 +338,13 @@ export default function ReceivingForm({
   };
 
   const handleSubmit = async () => {
-    console.log('[ReceivingForm] handleSubmit called, isEdit:', isEdit, 'initialData:', initialData);
-    console.log('[ReceivingForm] Form data:', formData);
-    console.log('[ReceivingForm] Receipt lines:', receiptLines);
-
     if (!validate()) {
-      console.log('[ReceivingForm] Validation failed');
       return;
     }
 
-    console.log('[ReceivingForm] Submitting data');
     try {
       await onSubmit({ ...formData, receiptLines });
-      console.log('[ReceivingForm] Submit successful');
     } catch (error) {
-      console.error('[ReceivingForm] Submit error:', error);
       throw error;
     }
   };

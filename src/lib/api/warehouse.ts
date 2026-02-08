@@ -382,7 +382,6 @@ export const warehouseApi = {
 
   async deleteItem(itemCode: number): Promise<void> {
     const url = `/warehouse/items/${itemCode}`;
-    console.log(`[warehouseApi] deleteItem(url=${url})`);
     await apiClient.delete<void>(url);
   },
 
@@ -410,7 +409,6 @@ export const warehouseApi = {
 
   async deleteStore(storeCode: number): Promise<void> {
     const url = `/warehouse/stores/${storeCode}`;
-    console.log(`[warehouseApi] deleteStore(url=${url})`);
     await apiClient.delete<void>(url);
   },
 

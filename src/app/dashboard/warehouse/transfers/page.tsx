@@ -221,7 +221,6 @@ export default function TransfersPage() {
       setSelectedTransfer(transferData);
       setIsViewModalOpen(true);
     } catch (error) {
-      console.error('Error fetching transfer details:', error);
       toast.showError('فشل تحميل تفاصيل النقل');
     }
   };
@@ -229,7 +228,6 @@ export default function TransfersPage() {
   const handleEdit = async (transaction: TransferTransaction) => {
     try {
       const transfer = await warehouseApi.getStoreTransferById(transaction.transferNo);
-      console.log('[TransfersPage] handleEdit - Transfer received:', transfer);
       // Only allow editing if PENDING
       if (transfer.transferStatus !== 'PENDING') {
         toast.showWarning('يمكن تعديل عمليات النقل المعلقة فقط');
@@ -252,12 +250,9 @@ export default function TransfersPage() {
           notes: line.notes || '',
         })) || [],
       };
-      console.log('[TransfersPage] Mapped transferData with transfer lines:', transferData);
-      console.log('[TransfersPage] Transfer lines count:', transferData.transferLines?.length || 0);
       setSelectedTransfer(transferData);
       setIsEditModalOpen(true);
     } catch (error) {
-      console.error('Error fetching transfer details:', error);
       toast.showError('فشل تحميل تفاصيل النقل');
     }
   };
@@ -283,7 +278,6 @@ export default function TransfersPage() {
       await completeTransfer.execute(transaction.transferNo);
       await refetchTransfers();
     } catch (error) {
-      console.error('Error completing transfer:', error);
     }
   };
 
@@ -329,7 +323,6 @@ export default function TransfersPage() {
       setSelectedTransfer(null);
       await refetchTransfers();
     } catch (error) {
-      console.error('Error saving store transfer:', error);
     }
   };
 
@@ -341,7 +334,6 @@ export default function TransfersPage() {
       setSelectedTransfer(null);
       await refetchTransfers();
     } catch (error) {
-      console.error('Error deleting store transfer:', error);
     }
   };
 

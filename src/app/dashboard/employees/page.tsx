@@ -554,7 +554,6 @@ export default function EmployeesListPage() {
         Cell: ({ row }) => {
           const rawUrl = row.original.profilePictureUrl;
           const resolvedUrl = resolveImageUrl(rawUrl);
-          console.log(`[Avatar Debug] employeeNo=${row.original.employeeId}, rawUrl=${rawUrl}, resolvedUrl=${resolvedUrl}`);
           return (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', justifyContent: 'flex-start' }}>
               <Avatar

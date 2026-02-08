@@ -20,6 +20,7 @@ interface AnimatedDialogProps {
   fullWidth?: boolean;
   disableBackdropClick?: boolean;
   showCloseButton?: boolean;
+  hideHeader?: boolean;
 }
 
 export default function AnimatedDialog({
@@ -32,6 +33,7 @@ export default function AnimatedDialog({
   fullWidth = true,
   disableBackdropClick = false,
   showCloseButton = true,
+  hideHeader = false,
 }: AnimatedDialogProps) {
   // Handle ESC key
   useEffect(() => {
@@ -91,54 +93,56 @@ export default function AnimatedDialog({
         },
       }}
     >
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '24px 24px 16px 24px',
-          backgroundColor: '#FFFFFF',
-          borderBottom: '1px solid #E5E7EB',
-          fontWeight: 700,
-          fontSize: '20px',
-          color: '#111827',
-          animation: open ? 'titleEnter 0.4s ease-out 0.1s both' : 'none',
-          '@keyframes titleEnter': {
-            from: {
-              opacity: 0,
-              transform: 'translateY(-10px)',
-            },
-            to: {
-              opacity: 1,
-              transform: 'translateY(0)',
-            },
-          },
-        }}
-      >
-        {title}
-        {showCloseButton && (
-          <IconButton
-            onClick={onClose}
-            size="small"
-            sx={{
-              color: '#6B7280',
-              '&:hover': {
-                backgroundColor: '#F3F4F6',
-                color: '#111827',
+      {!hideHeader && (
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '24px 24px 16px 24px',
+            backgroundColor: '#FFFFFF',
+            borderBottom: '1px solid #E5E7EB',
+            fontWeight: 700,
+            fontSize: '20px',
+            color: '#111827',
+            animation: open ? 'titleEnter 0.4s ease-out 0.1s both' : 'none',
+            '@keyframes titleEnter': {
+              from: {
+                opacity: 0,
+                transform: 'translateY(-10px)',
               },
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <Close />
-          </IconButton>
-        )}
-      </DialogTitle>
+              to: {
+                opacity: 1,
+                transform: 'translateY(0)',
+              },
+            },
+          }}
+        >
+          {title}
+          {showCloseButton && (
+            <IconButton
+              onClick={onClose}
+              size="small"
+              sx={{
+                color: '#6B7280',
+                '&:hover': {
+                  backgroundColor: '#F3F4F6',
+                  color: '#111827',
+                },
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Close />
+            </IconButton>
+          )}
+        </DialogTitle>
+      )}
 
       <DialogContent
         sx={{
-          padding: '24px',
+          padding: hideHeader ? 0 : '24px',
           backgroundColor: '#FFFFFF',
-          maxHeight: '70vh',
+          maxHeight: hideHeader ? 'none' : '70vh',
           overflowY: 'auto',
           width: 'auto',
           height: 'auto',
