@@ -10,6 +10,7 @@ import {
   Tooltip,
   Typography,
   CircularProgress,
+  Avatar,
 } from '@mui/material';
 import {
   Add,
@@ -19,6 +20,7 @@ import {
   Download,
   Fullscreen,
   FullscreenExit,
+  PersonOutline,
 } from '@mui/icons-material';
 import {
   MaterialReactTable,
@@ -42,6 +44,7 @@ import { employeesApi, departmentsApi, authApi } from '@/lib/api';
 import type { DepartmentResponse, EmployeeRequest } from '@/lib/api';
 import { mapEmployeeResponseToEmployee, mapEmployeeToEmployeeRequest } from '@/lib/mappers/employeeMapper';
 import { useApiWithToast } from '@/hooks/useApiWithToast';
+import { resolveImageUrl } from '@/lib/utils/imageUtils';
 import { exportDataToCSV } from '@/lib/utils/exportUtils';
 import { formatDate } from '@/lib/utils/dateFormatter';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
@@ -294,17 +297,25 @@ export default function EmployeesListPage() {
     }
   );
 
-  const handleSubmit = async (data: Partial<Employee>) => {
+  const handleSubmit = async (data: Partial<Employee>, imageFile?: File | null) => {
     try {
       const request = mapEmployeeToEmployeeRequest(data);
+      const formData = new FormData();
+
+      // 1. JSON Data as Blob
+      formData.append('employee', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+
+      // 2. Image File
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
 
       if (selectedEmployee) {
-        // Update existing employee
-        await updateEmployee({ id: selectedEmployee.employeeId, request });
+        // Update needs casting because generated API might expect JSON
+        await updateEmployee({ id: selectedEmployee.employeeId, request: formData as any });
         setIsEditModalOpen(false);
       } else {
-        // Add new employee
-        await createEmployee(request);
+        await createEmployee(formData as any);
         setIsAddModalOpen(false);
       }
 
@@ -530,7 +541,42 @@ export default function EmployeesListPage() {
       {
         accessorKey: 'fullName',
         header: 'الاسم الكامل',
-        size: 200,
+        size: 250,
+        enableColumnFilter: true,
+        muiTableBodyCellProps: {
+          sx: {
+            textAlign: 'right',
+            direction: 'rtl',
+            borderLeft: '1px solid #e0e0e0', // Restore the left border with MUI default divider color
+            backgroundColor: '#FFFFFF',
+          }
+        },
+        Cell: ({ row }) => {
+          const rawUrl = row.original.profilePictureUrl;
+          const resolvedUrl = resolveImageUrl(rawUrl);
+          console.log(`[Avatar Debug] employeeNo=${row.original.employeeId}, rawUrl=${rawUrl}, resolvedUrl=${resolvedUrl}`);
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, width: '100%', justifyContent: 'flex-start' }}>
+              <Avatar
+                src={resolvedUrl || undefined}
+                alt={row.original.fullName}
+                sx={{
+                  width: 35,
+                  height: 35,
+                  border: '1px solid #eee',
+                  bgcolor: '#0c2b7a',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                }}
+              >
+                {row.original.fullName ? row.original.fullName.charAt(0) : <PersonOutline />}
+              </Avatar>
+              <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                {row.original.fullName}
+              </Typography>
+            </Box>
+          )
+        },
       },
       {
         accessorKey: 'employeeId',
@@ -563,7 +609,11 @@ export default function EmployeesListPage() {
     enablePagination: false, // Disable pagination for infinite scroll
     enableBottomToolbar: true, // Keep bottom toolbar for summary/total count
     rowVirtualizerInstanceRef, // Optional as per doc, but good for access
-    rowVirtualizerOptions: { overscan: 10 },
+    rowVirtualizerOptions: {
+      overscan: 15, // Balanced buffer for smooth scroll without performance hit
+      estimateSize: () => 73, // Comfortable density with avatar: ~73px actual height
+      measureElement: (element) => element?.getBoundingClientRect().height || 73, // Dynamic measurement for accurate scrollbar
+    },
     // layoutMode: 'grid', // REMOVED: Not in the user's provided doc. Can cause lag if not needed.
 
     getRowId: (row) => row.employeeId.toString(), // Optimization: Stable keys for virtualization
@@ -584,7 +634,7 @@ export default function EmployeesListPage() {
         right: ['mrt-row-select', 'mrt-row-expand'], // Selection checkboxes on the right for RTL
       },
     },
-    columnResizeMode: 'onChange',
+    columnResizeMode: 'onEnd', // Changed from onChange to prevent re-renders during resize
     defaultColumn: {
       minSize: 80,
       maxSize: 500,
@@ -611,9 +661,11 @@ export default function EmployeesListPage() {
       sx: {
         ...(lightTableTheme.muiTableContainerProps as { sx?: Record<string, unknown> })?.sx,
         overflowX: 'auto',
+        overflowY: 'auto',
         maxWidth: '100%',
         width: '100%',
-        maxHeight: 'calc(100vh - 280px)', // Fixed height for virtualization (adjusted for header/toolbar)
+        maxHeight: 'calc(100vh - 280px)',
+        WebkitOverflowScrolling: 'touch', // iOS smooth scroll
       },
     },
     muiTopToolbarProps: {

@@ -74,6 +74,7 @@ export interface EmployeeResponse {
   modifiedBy?: string;
   managerId?: number;
   managerName?: string;
+  profilePictureUrl?: string; // Added for avatar support
 }
 
 export interface EmployeeListResponse {
@@ -189,7 +190,7 @@ export const employeesApi = {
   /**
    * Create new employee
    */
-  async createEmployee(request: EmployeeRequest): Promise<EmployeeResponse> {
+  async createEmployee(request: EmployeeRequest | FormData): Promise<EmployeeResponse> {
     const response = await apiClient.post<EmployeeResponse>('/employees', request);
     return response;
   },
@@ -197,7 +198,7 @@ export const employeesApi = {
   /**
    * Update employee
    */
-  async updateEmployee(id: number, request: EmployeeRequest): Promise<EmployeeResponse> {
+  async updateEmployee(id: number, request: EmployeeRequest | FormData): Promise<EmployeeResponse> {
     const response = await apiClient.put<EmployeeResponse>(`/employees/${id}`, request);
     return response;
   },

@@ -135,9 +135,13 @@ export class ApiClient {
     const token = this.getToken();
 
     const headers = new Headers(options.headers);
-    if (!headers.has('Content-Type')) {
+
+    // Only set Content-Type to application/json if body is NOT FormData
+    // For FormData, let the browser set it with the boundary
+    if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json; charset=UTF-8');
     }
+
     // Explicitly request UTF-8 encoding
     headers.set('Accept', 'application/json; charset=UTF-8');
     headers.set('Accept-Charset', 'UTF-8');
@@ -235,13 +239,13 @@ export class ApiClient {
     }
 
     if (!response.ok) {
-      const errorData = data as { 
-        message?: string; 
-        errors?: Record<string, string[]>; 
+      const errorData = data as {
+        message?: string;
+        errors?: Record<string, string[]>;
         data?: unknown | Record<string, string>; // Can be Map<String, String> from backend validation
       };
       const errorMessage = errorData.message || `HTTP ${response.status}: ${response.statusText}`;
-      
+
       // Extract errors - can be in 'errors' field or 'data' field (for validation errors)
       let errors: Record<string, string[]> = {};
       if (errorData.errors) {
@@ -254,7 +258,7 @@ export class ApiClient {
           errors[key] = [dataErrors[key]]; // Convert string to string[]
         });
       }
-      
+
       const actualErrorData = errorData.data || null; // Extract data field from error response
       throw new ApiError(errorMessage, response.status, errors, actualErrorData);
     }
@@ -279,10 +283,11 @@ export class ApiClient {
    * POST request
    */
   async post<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    const isFormData = body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : (body ? JSON.stringify(body) : undefined),
     });
   }
 
@@ -290,10 +295,11 @@ export class ApiClient {
    * PUT request
    */
   async put<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    const isFormData = body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : (body ? JSON.stringify(body) : undefined),
     });
   }
 
@@ -301,10 +307,11 @@ export class ApiClient {
    * PATCH request
    */
   async patch<T>(endpoint: string, body?: unknown, options?: RequestInit): Promise<T> {
+    const isFormData = body instanceof FormData;
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      body: isFormData ? (body as FormData) : (body ? JSON.stringify(body) : undefined),
     });
   }
 

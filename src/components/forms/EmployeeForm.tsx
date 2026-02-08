@@ -9,6 +9,7 @@ import {
   CircularProgress,
   Paper,
   Stack,
+  Avatar,
 } from '@mui/material';
 import {
   Save,
@@ -21,6 +22,7 @@ import {
   PaymentsOutlined,
   VpnKeyOutlined,
   EventNoteOutlined,
+  CloudUpload,
 } from '@mui/icons-material';
 import AnimatedDialog from '@/components/common/AnimatedDialog';
 import {
@@ -41,7 +43,7 @@ import { mapEmployeeResponseToEmployee } from '@/lib/mappers/employeeMapper';
 interface EmployeeFormProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<Employee>) => Promise<void>;
+  onSubmit: (data: Partial<Employee>, imageFile?: File | null) => Promise<void>;
   initialData?: Employee | null;
   loading?: boolean;
 }
@@ -99,6 +101,7 @@ type EmployeeFormData = Omit<Partial<Employee>, 'dateOfBirth' | 'hireDate' | 'te
 };
 
 import { SmartRow, SmartField } from '@/components/common/SmartLayout';
+import { resolveImageUrl } from '@/lib/utils/imageUtils';
 
 export default function EmployeeForm({
   open,
@@ -109,6 +112,11 @@ export default function EmployeeForm({
 }: EmployeeFormProps) {
   const isEdit = !!initialData;
 
+  // Import utility here to avoid circular dependencies if any, or just for clarity
+  // Ideally this should be a top-level import, but I'll add the import statement in a separate chunk if needed.
+  // Wait, I should add the import at the top.
+
+
   const [formData, setFormData] = useState<EmployeeFormData>({
     residenceId: '', nationalId: '', fullName: '', email: '', phone: '',
     dateOfBirth: null, hireDate: null, terminationDate: null, departmentCode: 0,
@@ -117,6 +125,54 @@ export default function EmployeeForm({
     passportExpiry: null, residenceExpiry: null, vacationBalance: 30, managerId: undefined,
     username: '', password: '', userType: 'EMPLOYEE', socialInsuranceNo: '',
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initialData?.profilePictureUrl ? resolveImageUrl(initialData.profilePictureUrl) || null : null
+  );
+
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target?.result as string; };
+
+      img.onload = () => {
+        let { width, height } = img;
+        const MAX_WIDTH = 800, MAX_HEIGHT = 800;
+
+        if (width > MAX_WIDTH) { height = (height * MAX_WIDTH) / width; width = MAX_WIDTH; }
+        if (height > MAX_HEIGHT) { width = (width * MAX_HEIGHT) / height; height = MAX_HEIGHT; }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob((blob) => {
+          if (blob) resolve(new File([blob], file.name, { type: 'image/jpeg', lastModified: Date.now() }));
+        }, 'image/jpeg', 0.8);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      if (file.size > 1024 * 1024) {
+        const compressed = await compressImage(file);
+        setImageFile(compressed);
+      } else {
+        setImageFile(file);
+      }
+
+      const reader = new FileReader();
+      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -184,6 +240,8 @@ export default function EmployeeForm({
         passportExpiry: null, residenceExpiry: null, vacationBalance: 30, managerId: undefined,
         username: '', password: '', userType: 'EMPLOYEE', socialInsuranceNo: '',
       });
+      setImageFile(null);
+      setImagePreview(null);
     }
   }, [initialData, open]);
 
@@ -281,7 +339,7 @@ export default function EmployeeForm({
       passportExpiry: formData.passportExpiry ?? undefined,
       residenceExpiry: formData.residenceExpiry ?? undefined,
     };
-    await onSubmit(submitData);
+    await onSubmit(submitData, imageFile);
   };
 
   const departmentOptions = [
@@ -505,6 +563,40 @@ export default function EmployeeForm({
           <Box sx={{ minHeight: '400px', animation: 'fadeIn 0.5s ease-out' }}>
             {activeStep === 0 && (
               <Stack spacing={4}>
+                {/* Profile Image Row */}
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                  <Stack direction="column" alignItems="center" spacing={2}>
+                    <Avatar
+                      src={imagePreview || undefined}
+                      sx={{
+                        width: 100,
+                        height: 100,
+                        bgcolor: '#0c2b7a',
+                        fontSize: '32px',
+                        border: '4px solid #fff',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}
+                    >
+                      {!imagePreview && (formData.fullName ? formData.fullName.charAt(0) : <PersonOutline />)}
+                    </Avatar>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      startIcon={<CloudUpload />}
+                      size="small"
+                      sx={{ borderRadius: '20px', textTransform: 'none' }}
+                    >
+                      رفع صورة شخصية
+                      <input
+                        type="file"
+                        hidden
+                        accept="image/*"
+                        onChange={handleImageChange}
+                      />
+                    </Button>
+                  </Stack>
+                </Box>
+
                 {/* Full Name Row - Smart Layout */}
                 <Box>
                   <FormSection icon={<PersonOutline />} title="الاسم الكامل" />

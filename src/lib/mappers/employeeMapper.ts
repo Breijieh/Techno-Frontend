@@ -61,6 +61,7 @@ export function mapEmployeeResponseToEmployee(response: EmployeeResponse): Emplo
     managerId: response.managerId,
     projectCode: response.primaryProjectCode,
     socialInsuranceNo: response.socialInsuranceNo,
+    profilePictureUrl: response.profilePictureUrl, // <-- ADD THIS
   };
 }
 

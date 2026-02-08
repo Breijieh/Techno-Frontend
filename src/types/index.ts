@@ -79,6 +79,7 @@ export interface Employee {
   projectCode?: number;
   username?: string;
   password?: string;
+  profilePictureUrl?: string | null;
 }
 
 export interface Department {
