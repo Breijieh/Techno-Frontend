@@ -23,7 +23,8 @@ const BACKEND_BASE_URL = API_BASE_URL;
  * @returns The resolved full URL or undefined
  */
 export const resolveImageUrl = (path: string | null | undefined): string | undefined => {
-    if (!path) return undefined;
+    // Return undefined for null, undefined, empty, or whitespace-only paths
+    if (!path || !path.trim()) return undefined;
 
     // If it's already a full URL, return it
     if (path.startsWith('http://') || path.startsWith('https://')) {
@@ -40,6 +41,9 @@ export const resolveImageUrl = (path: string | null | undefined): string | undef
 
     // Normalize the path
     let normalizedPath = path.trim();
+
+    // Additional check: if after trimming nothing remains, return undefined
+    if (!normalizedPath) return undefined;
 
     // If path starts with /uploads or uploads, it's a relative upload path
     if (normalizedPath.startsWith('/uploads/') || normalizedPath.startsWith('uploads/')) {
