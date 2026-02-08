@@ -12,9 +12,12 @@ const BACKEND_BASE_URL = API_BASE_URL;
 
 /**
  * Resolves the full URL for an image path.
- * If the path is a relative path starting with /uploads, it prepends the backend base URL.
- * If the path is already a full URL (http/https), it returns it as is.
- * If the path is null or undefined, it returns undefined.
+ * Handles multiple path formats:
+ * - Full URLs (http/https) - returned as-is
+ * - /uploads/... - prepends backend URL
+ * - uploads/... - prepends backend URL with leading slash
+ * - 2026/02/... (date-based paths) - prepends backend URL + /uploads/
+ * - null/undefined - returns undefined
  * 
  * @param path The image path or URL
  * @returns The resolved full URL or undefined
@@ -22,29 +25,49 @@ const BACKEND_BASE_URL = API_BASE_URL;
 export const resolveImageUrl = (path: string | null | undefined): string | undefined => {
     if (!path) return undefined;
 
-    // Log for debugging
-    // console.log('Resolving Image URL - Input:', path);
-
     // If it's already a full URL, return it
     if (path.startsWith('http://') || path.startsWith('https://')) {
         return path;
     }
 
-    // Try to handle both /uploads and uploads
-    // Backend saves as /uploads/..., but just in case
-    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    // If it's a data URL, return it
+    if (path.startsWith('data:')) {
+        return path;
+    }
 
-    if (cleanPath.startsWith('/uploads')) {
-        // Ensure we don't have double slashes if BACKEND_BASE_URL ends with /
-        const baseUrl = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL.slice(0, -1) : BACKEND_BASE_URL;
-        const finalUrl = `${baseUrl}${cleanPath}`;
+    // Normalize the base URL (remove trailing slash if present)
+    const baseUrl = BACKEND_BASE_URL.endsWith('/') ? BACKEND_BASE_URL.slice(0, -1) : BACKEND_BASE_URL;
 
-        // Console log strictly for debugging the user's issue
+    // Normalize the path
+    let normalizedPath = path.trim();
+
+    // If path starts with /uploads or uploads, it's a relative upload path
+    if (normalizedPath.startsWith('/uploads/') || normalizedPath.startsWith('uploads/')) {
+        // Ensure it starts with /
+        if (!normalizedPath.startsWith('/')) {
+            normalizedPath = '/' + normalizedPath;
+        }
+        const finalUrl = `${baseUrl}${normalizedPath}`;
         console.log(`[ImageUtils] Resolved: ${path} -> ${finalUrl}`);
-
         return finalUrl;
     }
 
-    // Return original for other cases (e.g. data:image/...)
+    // If path looks like a date-based path (e.g., 2026/02/...), prepend /uploads/
+    // This handles legacy paths that might be stored without the uploads prefix
+    if (/^\d{4}\/\d{2}\//.test(normalizedPath)) {
+        const finalUrl = `${baseUrl}/uploads/${normalizedPath}`;
+        console.log(`[ImageUtils] Resolved date-path: ${path} -> ${finalUrl}`);
+        return finalUrl;
+    }
+
+    // For any other relative path, assume it's an upload path
+    // This is a fallback to ensure we don't break anything
+    if (!normalizedPath.startsWith('/')) {
+        normalizedPath = '/' + normalizedPath;
+    }
+
+    // If it doesn't look like a special path, return the original
+    // This handles cases like data:image/... which we already checked above
+    console.log(`[ImageUtils] Passthrough: ${path}`);
     return path;
 };
